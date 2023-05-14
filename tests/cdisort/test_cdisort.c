@@ -87,7 +87,8 @@
  * Rewritten in C by T. Dowling, Summer 2010.
  */
 
-#include "cdisort.h"
+// Change header file for cmake
+#include <cdisort/cdisort.h>
 
 /* 
  * Disort-specific shift macros.
