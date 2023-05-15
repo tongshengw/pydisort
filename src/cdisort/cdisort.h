@@ -24,6 +24,10 @@
 #ifndef __cdisort_h
 #define __cdisort_h
 
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -1299,3 +1303,7 @@ void disort_test14(void);
 /* * * * * * * * * * * * * * * * * * * * * * * end of cdisort.h * * * * * * * * * * * * * * * * * * */
 
 #endif
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif 

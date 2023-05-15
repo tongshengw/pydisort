@@ -26,14 +26,14 @@
 #ifndef __locate_disort_h
 #define __locate_disort_h
 
-#if defined (__cplusplus)
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 int locate_disort (double *xx, int n, double x);
 int flocate_disort (float *xx, int n, float x);
 
-#if defined (__cplusplus)
+#ifdef __cplusplus
 }
 #endif
 
