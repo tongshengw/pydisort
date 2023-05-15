@@ -32,15 +32,16 @@ message(STATUS "----- Placeholder ----- ")
 
 ## 3. Set up project system libraries ##
 message(STATUS "3. Set up project system libraries")
-message(STATUS "----- Placeholder ----- ")
+message(STATUS "Setup tomlpp ")
+include(${CMAKE_SOURCE_DIR}/cmake/tomlpp.cmake)
 
 
 ## 4. Set up project configure file and library ##
-message(STATUS "4. Set up project libraries")
+message(STATUS "5. Set up project libraries")
 configure_file(${CMAKE_SOURCE_DIR}/configure.hpp.in configure.hpp @ONLY)
 add_subdirectory(src)
 
 
 ## 5. Set up unit tests
-message(STATUS "5. Set up unit tests")
+message(STATUS "6. Set up unit tests")
 add_subdirectory(tests)
