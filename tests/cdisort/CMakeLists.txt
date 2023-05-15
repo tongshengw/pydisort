@@ -4,7 +4,7 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 # Compile test_cdisort.c
 
-add_executable(test_cdisort.${buildl} test_cdisort.c)
+add_executable(test_cdisort.${buildl} test_cdisort.c print_test.c)
 
 set_target_properties(test_cdisort.${buildl}
 	PROPERTIES

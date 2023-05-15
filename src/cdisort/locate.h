@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------
- * $Id: locate.h 2623 2011-12-23 10:52:38Z robert.buras $
+ * $Id: locate_disort.h 2623 2011-12-23 10:52:38Z robert.buras $
  * 
  * This file is part of libRadtran.
  * Copyright (c) 1997-2012 by Arve Kylling, Bernhard Mayer,
@@ -23,15 +23,15 @@
  * Boston, MA 02111-1307, USA.
  *--------------------------------------------------------------------*/
 
-#ifndef __locate_h
-#define __locate_h
+#ifndef __locate_disort_h
+#define __locate_disort_h
 
 #if defined (__cplusplus)
 extern "C" {
 #endif
 
-int locate (double *xx, int n, double x);
-int flocate (float *xx, int n, float x);
+int locate_disort (double *xx, int n, double x);
+int flocate_disort (float *xx, int n, float x);
 
 #if defined (__cplusplus)
 }

@@ -135,9 +135,9 @@ typedef struct {
 } disort_brdf;
 
 
-typedef struct {
+typedef struct disort_state {
   char
-    header[128];
+    header[1024];
   disort_flag
     flag;
   disort_bc
@@ -174,7 +174,7 @@ typedef struct {
     *gensrcu;   /* User specified general source at user angles                        */
 } disort_state;
 
-typedef struct {
+typedef struct disort_output {
   disort_radiant
    *rad;       /* See typedef disort_radiant                                           */
   double
@@ -1035,14 +1035,14 @@ void c_albtrans_spherical(disort_state *ds,
                           double       *sflup,
                           double       *sfldn);
 
-void c_errmsg(char *messag,
+void c_errmsg(char const *messag,
               int   type);
 
 int c_write_bad_var(int   quiet,
-                    char *varnam);
+                    char const *varnam);
 
 int c_write_too_small_dim(int   quiet,
-                          char *dimnam,
+                          char const *dimnam,
                           int   minval);
 
 void c_sgbco(double *abd,
@@ -1251,10 +1251,10 @@ void c_twostr_out_free(disort_state  *ds,
 
 double *c_dbl_vector(int  nl, 
                      int  nh,
-		     char *name);
+		     char const *name);
 int *c_int_vector(int  nl, 
 		  int  nh,
-		  char *name);
+		  char const *name);
 
 void print_test(disort_state  *ds_calc,
                 disort_output *calc,
