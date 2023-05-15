@@ -19,10 +19,6 @@ set_target_properties(${namel}_${buildl}
     COMPILE_FLAGS ${CMAKE_C_FLAGS_${buildu}}
     )
 
-# set_target_properties(${namel}_${buildl} 
-#     PROPERTIES 
-#     LINKER_LANGUAGE C)
-
 target_include_directories(${namel}_${buildl}
     PRIVATE 
     ${CMAKE_BINARY_DIR}
