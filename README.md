@@ -77,24 +77,3 @@ int main() {
 ## Summary
 
 Overall, the `cppdisort` wraps the "cdisort" library in C++ using the DisortWrapper class, allowing easier access and usage of the library's functionality from C++ code.  It provides an object-oriented, encapsulated, and more user-friendly interface to the functionality of "cdisort". It leverages the benefits of C++ to offer improved usability, convenience, and potentially enhanced performance compared to using "cdisort" directly.
-
-
-
-# Overview of the Project
-
-## DISORT in Fortran, C, C++, Python
-
-You can find the detailed overview of the DISORT project, including information about disort, cdisort, cppdisort, and pydisort in the [README - Overview of the DISORT project in Fortran, C, C++, Python.md](./README%20-%20Overview%20of%20the%20DISORT%20project%20in%20Fortran%2C%20C%2C%20C%2B%2B%2C%20Python.md) file.
-
-## Major Branches
-
-There are three formal branches in this repo: 
-- `cdisort_patches`
-- `cppdisort`
-- `pydisort`
-
-The `cdisort_patches` branch contains the original `cdisort` library (v2.1.3) by Timothy E. Dowling, plus some patch files containing modifications made by [Cheng Li](https://chengcli.io/). Different from `cdisort`, which uses `Makefile` to build the library, we modified the configuration and adapted a `CMake`-built approach. For detailed changes, please see the `README.md` file in the `cdisort_patches` branch.
-
-The `cppdisort` branch provides a C++ wrapper for the "cdisort" library, allowing easy access to its functionality from C++ code. We use toml++ for configuration management, allowing users to specify various parameters in the TOML configuration file. The updated implementation ensures compatibility with modern C++ standards and incorporates bug fixes and enhancements compared to the original cdisort library. For detailed changes, please see the `README.md` file in the `cppdisort` branch.
-
-The `pydisort` branch builds a Python library that provides a Pythonic interface to the cppdisort library. It serves as a bridge between the C++ implementation of cppdisort and the Python programming language, enabling users to leverage the power of cppdisort within their Python applications. For detailed changes, please see the `README.md` file in the `pydisort` branch.
