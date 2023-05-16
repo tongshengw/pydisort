@@ -24,6 +24,8 @@ target_include_directories(${namel}_${buildl}
     ${CMAKE_BINARY_DIR}
     ${TOMLPP_INCLUDE_DIR}
     ${CDISORT_INCLUDE_DIR}
+    ${PYTHON_INCLUDE_DIRS}
+    ${PYBIND11_INCLUDE_DIR}
     )
 
 target_link_libraries(${namel}_${buildl} m)

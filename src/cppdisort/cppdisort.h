@@ -2,16 +2,16 @@
 #define PROD_RAD_DISORT_DISORT_WRAPPER_H_
 
 #include <cdisort/cdisort.h>
-// #include <pybind11/numpy.h>
-// #include <pybind11/pybind11.h>
-// #include <pybind11/stl.h>
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <map>
 #include <string>
 #include <toml++/toml.h>
 #include <tuple>
 
-// namespace py = pybind11;
+namespace py = pybind11;
 
 class DisortWrapper {
    public:
@@ -50,7 +50,7 @@ class DisortWrapper {
 
     void SetAccuracy(double accur) { _ds.accur = accur; }
 
-    // void SetFlags(py::dict const& dict);
+    void SetFlags(py::dict const& dict);
 
     virtual ~DisortWrapper() {
         if (_is_finalized) {
@@ -151,13 +151,13 @@ class DisortWrapper {
         return std::make_tuple(flxup, flxdn);
     }
 
-    // py::array_t<double> RunRTIntensity() {
-    //     _ds.flag.onlyfl = false;
-    //     runDisort();
-    //     py::array_t<double> numpy_array({_ds.nphi, _ds.ntau, _ds.numu},
-    //                                     _ds_out.uu);
-    //     return numpy_array;
-    // }
+    py::array_t<double> RunRTIntensity() {
+        _ds.flag.onlyfl = false;
+        runDisort();
+        py::array_t<double> numpy_array({_ds.nphi, _ds.ntau, _ds.numu},
+                                        _ds_out.uu);
+        return numpy_array;
+    }
 
    protected:
     disort_state _ds;
