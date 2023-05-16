@@ -18,7 +18,7 @@ The `cppdisort` branch provides a C++ wrapper for the "cdisort" library, allowin
 The `pydisort` branch builds a Python library that provides a Pythonic interface to the cppdisort library. It serves as a bridge between the C++ implementation of cppdisort and the Python programming language, enabling users to leverage the power of cppdisort within their Python applications. For detailed changes, please see the `README.md` file in the `pydisort` branch.
 
 
-# 2. This Branch: A C++ Wrapper for `cdisort`
+# 2. This Branch: a C++ Wrapper for `cdisort`
 
 This branch provides a wrapper for the "cdisort" library which is implemented in C++. The wrapper allows accessing the functionality of the "cdisort" library from C++ code. The wrapper consists of two files: "cppdisort.h" and "cppdisort.cc".
 
