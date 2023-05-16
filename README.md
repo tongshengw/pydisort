@@ -2,7 +2,7 @@
 
 ## DISORT in Fortran, C, C++, Python
 
-You can find the detailed overview of the DISORT project, including information about disort, cdisort, cppdisort, and pydisort @ [README - Overview of the DISORT project in Fortran, C, C++, Python](./README_DISORT_.md).
+You can find the detailed overview of the DISORT project, including information about disort, cdisort, cppdisort, and pydisort @ [README - Overview of the DISORT project in Fortran, C, C++, Python](./README_DISORT.md).
 
 ## Major Branches
 
