@@ -31,7 +31,6 @@ The "cppdisort.cc" file implements the member functions of the DisortWrapper cla
 ## Build
 
 ```bash
-rm -rf build
 mkdir build
 cd build
 cmake ..
