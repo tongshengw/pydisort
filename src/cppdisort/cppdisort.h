@@ -1,5 +1,5 @@
-#ifndef PROD_RAD_DISORT_DISORT_WRAPPER_H_
-#define PROD_RAD_DISORT_DISORT_WRAPPER_H_
+#ifndef DISORT_CPPDISORT_DISORTWRAPPER_H_
+#define DISORT_CPPDISORT_DISORTWRAPPER_H_
 
 #include <cdisort/cdisort.h>
 #include <pybind11/numpy.h>
@@ -13,6 +13,40 @@
 
 namespace py = pybind11;
 
+// wraps c_getmom
+py::array_t<double> getLegendreCoefficients(int nmom, std::string model, double gg = 0.);
+
+// flux index constants
+struct Radiant {
+    // Direct-beam flux (w/o delta-M scaling)
+    static const int RFLDIR = 0;
+
+    // Diffuse down-flux (tot.-direct-beam; w/o delta-M scaling)
+    static const int FLDN = 1;
+
+    // Diffuse up-flux
+    static const int FLUP = 2;
+
+    // Flux divergence, d(net flux)/d(optical depth)
+    static const int DFDT = 3;
+
+    // Mean intensity, incl. direct beam (not corr. for delta-M scaling)
+    static const int UAVG = 4;
+
+    // Mean diffuse downward intensity, not incl. direct beam
+    // (not corr. for delta-M scaling)
+    static const int UAVGDN = 5;
+
+    // Mean diffuse downward intensity, not incl. direct beam
+    // (not corr. for delta-M scaling)
+    static const int UAVGUP = 6;
+
+    // Mean diffuse direct solar, that is the direct beam
+    // (not corr. for delta-M scaling)
+    static const int UAVGSO = 7;
+};
+
+// wraps disort_state and disort_output
 class DisortWrapper {
    public:
     // accessible boundary conditions
@@ -30,136 +64,75 @@ class DisortWrapper {
         return fromTomlTable(toml::parse_file(filename));
     }
 
-    DisortWrapper *SetAtmosphereDimension(int nlyr, int nstr, int nmom,
-                                          int nphase);
+    virtual ~DisortWrapper();
+
+    void SetHeader(std::string header);
+
+    DisortWrapper *SetAtmosphereDimension(int nlyr, int nstr, int nmom, int nphase);
 
     DisortWrapper *SetFlags(std::map<std::string, bool> const &flags);
 
-    DisortWrapper *SetIntensityDimension(int nphi, int ntau, int numu);
+    DisortWrapper *SetIntensityDimension(int nuphi, int nutau, int numu);
 
-    void Finalize() {
-        if (_is_finalized) {
-            throw std::runtime_error("Disort is already initialized!");
-        }
+    //void SetFlags(py::dict const& dict);
 
-        c_disort_state_alloc(&_ds);
-        c_disort_out_alloc(&_ds, &_ds_out);
+    void Finalize();
 
-        _is_finalized = true;
+    bool IsFinalized() const {
+        return _is_finalized;
     }
 
-    void SetAccuracy(double accur) { _ds.accur = accur; }
-
-    void SetFlags(py::dict const& dict);
-
-    virtual ~DisortWrapper() {
-        if (_is_finalized) {
-            c_disort_state_free(&_ds);
-            c_disort_out_free(&_ds, &_ds_out);
-            _is_finalized = false;
-        }
+    int nLayers() const {
+        return _ds.nlyr;
     }
 
-    DisortWrapper *SetOpticalDepth(double *tau, int len) {
-        if (len != _ds.nlyr) {
-            throw std::runtime_error("Optical depth array length mismatch!");
-        }
-        for (int i = 0; i < _ds.nlyr; ++i) {
-            _ds.dtauc[i] = tau[i];
-        }
-        return this;
+    int nMoments() const {
+        return _ds.nmom;
     }
 
-    DisortWrapper *SetSingleScatteringAlbedo(double *ssa, int len) {
-        if (len != _ds.nlyr) {
-            throw std::runtime_error(
-                "Single Scattering array length mismatch!");
-        }
-
-        for (int i = 0; i < _ds.nlyr; ++i) {
-            _ds.ssalb[i] = ssa[i];
-        }
-        return this;
+    int nStreams() const {
+        return _ds.nstr;
     }
 
-    DisortWrapper *SetLevelTemperature(double *temp, int len) {
-        if (len != _ds.nlyr + 1) {
-            throw std::runtime_error("Temperature array length mismatch!");
-        }
-        for (int i = 0; i <= _ds.nlyr; ++i) {
-            if (temp[i] < 0) {
-                throw std::runtime_error("Temperature must be positive!");
-            }
-            _ds.temper[i] = temp[i];
-        }
-        return this;
+    void SetAccuracy(double accur) {
+        _ds.accur = accur;
     }
 
-    DisortWrapper *SetWavenumberRange_invcm(double wmin, double wmax) {
+    void SetWavenumberRange_invcm(double wmin, double wmax) {
         _ds.wvnmlo = wmin;
         _ds.wvnmhi = wmax;
-        return this;
     }
 
-    DisortWrapper *SetWavenumber_invcm(double wave) {
+    void SetWavenumber_invcm(double wave) {
         _ds.wvnmlo = wave;
         _ds.wvnmhi = wave;
-        return this;
     }
 
-    DisortWrapper *SetOutputOpticalDepth(double *usrtau, int len) {
-        if (len != _ds.ntau) {
-            throw std::runtime_error(
-                "Output optical depth array length mismatch!");
-        }
+    void SetOpticalDepth(double *tau, int len);
 
-        if (_ds.flag.usrtau) {
-            for (int i = 0; i < _ds.ntau; ++i) {
-                _ds.utau[i] = usrtau[i];
-            }
-        }
-        return this;
-    }
+    void SetSingleScatteringAlbedo(double *ssa, int len);
 
-    DisortWrapper *SetOutgoingRay(double *umu, double *phi) {
-        if (_ds.flag.usrang) {
-            for (int i = 0; i < _ds.numu; ++i) {
-                _ds.umu[i] = umu[i];
-            }
-            for (int i = 0; i < _ds.nphi; ++i) {
-                _ds.phi[i] = phi[i];
-            }
-        }
-        return this;
-    }
+    // temperature array is defined on levels
+    void SetLevelTemperature(double *temp, int len);
+
+    void SetUserOpticalDepth(double *usrtau, int len);
+
+    void SetUserCosinePolarAngle(double *umu, int len);
+
+    void SetUserAzimuthalAngle(double *phi, int len);
 
     void SetPlanckSource(double *planck);
 
-    void SetLegendreCoefficients(double **legendre);
+    // pmom is a 1D array of length nlyr * (nmom + 1)
+    // with nlyr being the number of layers and nmom the number of scattering moments
+    void SetPhaseMoments(double *pmom, int nlyr, int nmom_p1);
 
-    std::tuple<std::vector<double>, std::vector<double>> RunRTFlux() {
-        _ds.flag.onlyfl = true;
-        runDisort();
-        std::vector<double> flxup(_ds.nlyr);
-        std::vector<double> flxdn(_ds.nlyr);
+    DisortWrapper* Run();
+    // \todo how to make them actually constant ?
+    py::array_t<double> GetFlux() const;
+    py::array_t<double> GetIntensity() const;
 
-        for (int i = 0; i < _ds.nlyr; ++i) {
-            flxup[i] = _ds_out.rad[i].flup;
-            flxdn[i] = _ds_out.rad[i].rfldir + _ds_out.rad[i].rfldn;
-        }
-
-        return std::make_tuple(flxup, flxdn);
-    }
-
-   py::array_t<double> RunRTIntensity() {
-       _ds.flag.onlyfl = false;
-       runDisort();
-       py::array_t<double> numpy_array({_ds.nphi, _ds.ntau, _ds.numu},
-                                       _ds_out.uu);
-       return numpy_array;
-   }
-
-   protected:
+protected:
     disort_state _ds;
     disort_output _ds_out;
 
@@ -179,10 +152,11 @@ class DisortWrapper {
     bool _is_finalized = false;
     static DisortWrapper *fromTomlTable(const toml::table &table);
 
-    void runDisort();
     void printDisortState();
+    void printDisortFlags();
 };
 
+// exposing private members for testing
 class DisortWrapperTestOnly : public DisortWrapper {
    public:
     static DisortWrapper *FromString(std::string_view content) {
@@ -193,4 +167,4 @@ class DisortWrapperTestOnly : public DisortWrapper {
     disort_output *GetDisortOutput() { return &_ds_out; }
 };
 
-#endif  // PROD_RAD_DISORT_DISORT_WRAPPER_H_
+#endif  // DISORT_CPPDISORT_DISORTWRAPPER_H_

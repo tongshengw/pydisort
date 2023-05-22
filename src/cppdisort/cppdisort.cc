@@ -1,28 +1,45 @@
-//#include <glog/logging.h>
-
+#include <memory>
 #include <iostream>
 #include <sstream>
 #include <toml++/toml.h>
-
-// TODO(zhongmingqu): Uncomment the following line after fixing the erorr:
-//    In file included from prod/rad/disort/disort_wrapper.cc:7:
-//    bazel-out/k8-fastbuild/bin/external/org_libradtran_dowling_disort/_virtual_includes/disort/disort/cdisort.h:1308:1:
-//    error: extraneous closing brace ('}') } /* extern "C" */
-//    ^
-// #include <disort/cdisort.h>
-
 #include "cppdisort.h"
+
+const int Radiant::RFLDIR;
+const int Radiant::FLDN;
+const int Radiant::FLUP;
+const int Radiant::DFDT;
+const int Radiant::UAVG;
+const int Radiant::UAVGDN;
+const int Radiant::UAVGUP;
+const int Radiant::UAVGSO;
+
+py::array_t<double> getLegendreCoefficients(int nmom, std::string model, double gg)
+{
+    py::array_t<double> py_pmom(1 + nmom);
+    double *ptr = static_cast<double *>(py_pmom.request().ptr);
+    std::memset(ptr, 0, sizeof(double) * (1 + nmom));
+
+    if (model == "isotropic") {
+        c_getmom(ISOTROPIC, gg, nmom, ptr);
+    } else if (model == "rayleigh") {
+        c_getmom(RAYLEIGH, gg, nmom, ptr);
+    } else if (model == "henyey_greenstein") {
+        c_getmom(HENYEY_GREENSTEIN, gg, nmom, ptr);
+    } else if (model == "haze_garcia_siewert") {
+        c_getmom(HAZE_GARCIA_SIEWERT, gg, nmom, ptr);
+    } else if (model == "cloud_garcia_siewart") {
+        c_getmom(CLOUD_GARCIA_SIEWERT, gg, nmom, ptr);
+    } else {
+        throw std::invalid_argument("invalid scattering model");
+    }
+
+    return py_pmom;
+}
 
 DisortWrapper *DisortWrapper::fromTomlTable(const toml::table &table) {
     auto disort = new DisortWrapper();
     auto ds = &disort->_ds;
     auto ds_out = &disort->_ds_out;
-
-    // set disort state
-    ds->nlyr = table["dim"]["nlyr"].value<int>().value_or(0);
-    ds->nmom = table["dim"]["nmom"].value<int>().value_or(0);
-    ds->nstr = table["dim"]["nstr"].value<int>().value_or(0);
-    ds->nphase = table["dim"]["nphase"].value<int>().value_or(0);
 
     ds->flag.ibcnd = table["flag"]["ibcnd"].value<bool>().value_or(false);
     ds->flag.usrtau = table["flag"]["usrtau"].value<bool>().value_or(false);
@@ -32,6 +49,7 @@ DisortWrapper *DisortWrapper::fromTomlTable(const toml::table &table) {
     ds->flag.spher = table["flag"]["spher"].value<bool>().value_or(false);
     ds->flag.onlyfl = table["flag"]["onlyfl"].value<bool>().value_or(false);
     ds->flag.quiet = table["flag"]["quiet"].value<bool>().value_or(false);
+    ds->flag.brdf_type = table["flag"]["brdf_type"].value<int>().value_or(0);
     ds->flag.intensity_correction =
         table["flag"]["intensity_correction"].value<bool>().value_or(false);
     ds->flag.old_intensity_correction =
@@ -47,54 +65,42 @@ DisortWrapper *DisortWrapper::fromTomlTable(const toml::table &table) {
     }
 
     ds->flag.usrtau = table["flag"]["usrtau"].value<bool>().value_or(false);
-    if (ds->flag.usrtau) {
-        ds->ntau = table["dim"]["ntau"].value<int>().value();
-    }
 
     ds->flag.usrang = table["flag"]["usrang"].value<bool>().value_or(false);
-    if (ds->flag.usrang) {
-        ds->numu = table["dim"]["numu"].value<int>().value();
-        ds->nphi = table["dim"]["nphi"].value<int>().value();
-    } else {
-        ds->nphi = 1;
-    }
 
-    disort->Finalize();
     return disort;
 }
 
-DisortWrapper *DisortWrapper::SetAtmosphereDimension(int nlyr, int nmom,
-                                                     int nstr, int nphase) {
+void DisortWrapper::SetHeader(std::string header) {
+    snprintf(_ds.header, 1024, "%s", header.c_str());
+}
+
+DisortWrapper *DisortWrapper::SetAtmosphereDimension(
+    int nlyr, int nmom, int nstr, int nphase) {
     if (_is_finalized) {
-        // LOG(ERROR) << "Cannot set dimension after finalizing.";
         return this;
     }
 
     if (nlyr <= 0) {
-        // LOG(ERROR) << "nlyr must be positive.";
         return this;
     }
 
     if (nmom <= 0) {
-        // LOG(ERROR) << "nmom must be positive.";
         return this;
     }
 
     if (nstr <= 0) {
-        // LOG(ERROR) << "nstr must be positive.";
         return this;
     }
 
     if (nphase <= 0) {
-        // LOG(ERROR) << "nphase must be positive.";
         return this;
     }
 
     _ds.nlyr = nlyr;
     _ds.nmom = nmom;
     _ds.nstr = nstr;
-    _ds.nphase = nphase;
-    _ds.nphi = 1;
+    _ds.nphi = nphase;
 
     return this;
 }
@@ -152,44 +158,121 @@ DisortWrapper *DisortWrapper::SetFlags(
     return this;
 }
 
-DisortWrapper *DisortWrapper::SetIntensityDimension(int nphi, int numu,
-                                                    int ntau) {
+DisortWrapper *DisortWrapper::SetIntensityDimension(
+        int nuphi, int nutau, int numu) {
     if (_is_finalized) {
-        // LOG(ERROR) << "Cannot set dimension after finalizing.";
         return this;
     }
 
-    if (nphi <= 0) {
-        // LOG(ERROR) << "nphi must be positive.";
+    if (nuphi <= 0) {
         return this;
     }
 
     if (numu <= 0) {
-        // LOG(ERROR) << "numu must be positive.";
         return this;
     }
 
-    if (ntau <= 0) {
-        // LOG(ERROR) << "ntau must be positive.";
+    if (nutau <= 0) {
         return this;
     }
 
     if (_ds.flag.usrang) {
-        _ds.nphi = nphi;
+        _ds.nphi = nuphi;
         _ds.numu = numu;
     }
 
-    if (_ds.flag.usrtau) _ds.ntau = ntau;
+    if (_ds.flag.usrtau) _ds.ntau = nutau;
     return this;
 }
 
-void DisortWrapper::runDisort() {
+void DisortWrapper::Finalize() {
     if (!_is_finalized) {
-        // LOG(ERROR) << "Disort is not finalized.";
-        return;
+        c_disort_state_alloc(&_ds);
+        c_disort_out_alloc(&_ds, &_ds_out);
+        _is_finalized = true;
+    }
+}
+
+DisortWrapper::~DisortWrapper() {
+    if (_is_finalized) {
+        c_disort_state_free(&_ds);
+        c_disort_out_free(&_ds, &_ds_out);
+        _is_finalized = false;
+    }
+}
+
+void DisortWrapper::SetOpticalDepth(double *tau, int len) {
+    for (int i = 0; i < std::min(_ds.nlyr, len); ++i) {
+        _ds.dtauc[i] = tau[i];
+    }
+}
+
+void DisortWrapper::SetSingleScatteringAlbedo(
+        double *ssa, int len) {
+    for (int i = 0; i < std::min(_ds.nlyr, len); ++i) {
+        _ds.ssalb[i] = ssa[i];
+    }
+}
+
+void DisortWrapper::SetLevelTemperature(
+        double *temp, int len) {
+    for (int i = 0; i <= std::min(_ds.nlyr, len - 1); ++i) {
+        _ds.temper[i] = temp[i];
+    }
+}
+
+
+void DisortWrapper::SetUserOpticalDepth(
+        double *usrtau, int len) {
+    if (_ds.flag.usrtau) {
+        for (int i = 0; i < std::min(_ds.ntau, len); ++i) {
+            _ds.utau[i] = usrtau[i];
+        }
+    }
+}
+
+void DisortWrapper::SetUserCosinePolarAngle(double *umu, int len) {
+    if (_ds.flag.usrang) {
+        for (int i = 0; i < std::min(_ds.numu, len); ++i) {
+            _ds.umu[i] = umu[i];
+        }
+    }
+}
+
+void DisortWrapper::SetUserAzimuthalAngle(double *phi, int len) {
+    if (_ds.flag.usrang) {
+        for (int i = 0; i < std::min(_ds.nphi, len); ++i) {
+            _ds.phi[i] = phi[i];
+        }
+    }
+}
+
+void DisortWrapper::SetPhaseMoments(
+    double *pmom, int nlyr, int nmom_p1)
+{
+    std::memcpy(_ds.pmom, pmom, nlyr * nmom_p1 * sizeof(double));
+}
+
+py::array_t<double> DisortWrapper::GetFlux() const
+{
+    py::array_t<double> ndarray(
+            {_ds.nlyr + 1, 8}, &_ds_out.rad[0].rfldir
+            );
+    return ndarray;
+}
+
+py::array_t<double> DisortWrapper::GetIntensity() const {
+   py::array_t<double> ndarray(
+        {_ds.nphi, _ds.ntau, _ds.numu}, _ds_out.uu
+        );
+   return ndarray;
+}
+
+DisortWrapper* DisortWrapper::Run() {
+    if (!_is_finalized) {
+        return this;
     }
 
-    // LOG(INFO) << "Set Disort boundary condition";
     _ds.bc.btemp = btemp;
     _ds.bc.ttemp = ttemp;
     _ds.bc.fluor = fluor;
@@ -200,10 +283,9 @@ void DisortWrapper::runDisort() {
     _ds.bc.umu0 = umu0;
     _ds.bc.phi0 = phi0;
 
-    // LOG(INFO) << "Disort is running. ds = ";
-    printDisortState();
     c_disort(&_ds, &_ds_out);
-    // LOG(INFO) << "Disort is finished. ds_out = ";
+
+    return this;
 }
 
 void DisortWrapper::printDisortState() {
