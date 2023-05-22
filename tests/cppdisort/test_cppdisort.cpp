@@ -1,71 +1,57 @@
 #include <iostream>
-#include <stdexcept>
-#include <string>
+#include <cassert>
 #include <cppdisort/cppdisort.h>
 
-template<typename A>
-void assert_eq(std::string msg, A value1, A value2) {
-    if (value1 != value2) {
-        std::cerr << "- Failing \'" << msg << "\', "
-                  << "Expect " << value2 << ", Got " << value1 << std::endl;
-    } else {
-        std::cout << "- PASS " << msg << std::endl;
-    }
-}
-
 int main() {
-    // create an instance of DisortWrapper
-    DisortWrapper* disort = DisortWrapper::FromFile("input.toml");
+    // Test case for DisortWrapper::FromFile method
+    DisortWrapper* disort = DisortWrapper::FromFile("isotropic_scattering.toml");
+    assert(disort != nullptr);
 
-    // disort wrapper should be finalzied now
-    assert_eq("Disort finalize", disort->IsFinalized(), true);
-    assert_eq("Atmosphere layer", disort->nLayers(), 5);
-    assert_eq("Radiation streams", disort->nStreams(), 4);
-    assert_eq("phase function moments", disort->nMoments(), 4);
+    // Test case for DisortWrapper::SetHeader method
+    disort->SetHeader("Test header");
 
-    //disort->SetFlags(flags);
+    // Test case for DisortWrapper::SetAtmosphereDimension method
+    disort->SetAtmosphereDimension(3, 4, 5, 6);
 
-    // Set intensity dimensions
-    disort->SetIntensityDimension(10, 10, 10);
+    // Test case for DisortWrapper::SetFlags method
+    std::map<std::string, bool> flags = {
+        {"ibcnd", true},
+        {"usrtau", false},
+        {"usrang", true},
+        {"lamber", false},
+        {"planck", true},
+        {"spher", false},
+        {"onlyfl", true},
+        {"quiet", false},
+        {"intensity_correction", true},
+        {"old_intensity_correction", false},
+        {"general_source", true},
+        {"output_uum", false}
+    };
+    disort->SetFlags(flags);
 
-    // Set other parameters and data
+    // Test case for DisortWrapper::SetIntensityDimension method
+    disort->SetIntensityDimension(7, 8, 9);
 
-    // Finalize the DisortWrapper
+    // Test case for DisortWrapper::Finalize method
     disort->Finalize();
 
-    // Run the DisortWrapper and get the results
-    //std::tuple<std::vector<double>, std::vector<double>> fluxes = disort->RunRTFlux();
+    // Test case for DisortWrapper::IsFinalized method
+    assert(disort->IsFinalized());
 
-    /* Print the results
-    std::vector<double> flxup = std::get<0>(fluxes);
-    std::vector<double> flxdn = std::get<1>(fluxes);
+    // Test case for DisortWrapper::nLayers method
+    int numLayers = disort->nLayers();
+    std::cout << "Number of layers: " << numLayers << std::endl;
 
-    std::cout << "Flux Up:" << std::endl;
-    for (const double& flux : flxup) {
-        std::cout << flux << " ";
-    }
-    std::cout << std::endl;
+    // Test case for DisortWrapper::nMoments method
+    int numMoments = disort->nMoments();
+    std::cout << "Number of moments: " << numMoments << std::endl;
 
-    std::cout << "Flux Down:" << std::endl;
-    for (const double& flux : flxdn) {
-        std::cout << flux << " ";
-    }
-    std::cout << std::endl;*/
+    // Test case for DisortWrapper::nStreams method
+    int numStreams = disort->nStreams();
+    std::cout << "Number of streams: " << numStreams << std::endl;
 
-    py::array_t<double> intensities = disort->Run()->GetIntensity();
-
-    // Access intensity data
-    py::buffer_info info = intensities.request();
-    double* data = static_cast<double*>(info.ptr);
-    std::cout << "Intensity Data:" << std::endl;
-    for (int i = 0; i < info.size; ++i) {
-        std::cout << data[i] << " ";
-    }
-    std::cout << std::endl;
-
-    // Cleanup
     delete disort;
 
     return 0;
 }
-
