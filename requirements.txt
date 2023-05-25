@@ -1,0 +1,4 @@
+black
+cmakelang
+numpy
+pre-commit
