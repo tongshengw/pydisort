@@ -1,17 +1,28 @@
 #! python3
+""" Test isotropic scattering with pydisort."""
+# pylint: disable = no-name-in-module, invalid-name
+
+import os
+import unittest
+
 from numpy import array, pi
-from pydisort import disort, get_legendre_coefficients, Radiant
 from numpy.testing import assert_allclose
-import os, unittest
+
+from pydisort import disort, get_legendre_coefficients, Radiant
 
 
 # cdisort test01
 class PyDisortTests(unittest.TestCase):
+    """Test unit: isotropic scattering with pydisort."""
+
     def setUp(self):
+        """Set up the test."""
         self.toml_path = "isotropic_scattering.toml"
-        assert os.path.exists(self.toml_path), f"{self.toml_path} does not exist."
+        assert os.path.exists(
+            self.toml_path), f"{self.toml_path} does not exist."
 
     def test_isotropic_scattering(self):
+        """Test isotropic scattering."""
         ds = disort.from_file(self.toml_path)
         ds.set_header("01. test isotropic scattering")
 
@@ -67,7 +78,8 @@ class PyDisortTests(unittest.TestCase):
             rtol=1e-5,
         )
 
-        result = ds.get_flux()[:, [Radiant.RFLDIR, Radiant.FLDN, Radiant.FLUP]]
+        result = ds.get_flux(
+        )[:, [Radiant.RFLDIR, Radiant.FLDN, Radiant.FLUP]]
         assert_allclose(
             result,
             array(
@@ -98,7 +110,8 @@ class PyDisortTests(unittest.TestCase):
             rtol=1e-5,
         )
 
-        result = ds.get_flux()[:, [Radiant.RFLDIR, Radiant.FLDN, Radiant.FLUP]]
+        result = ds.get_flux(
+        )[:, [Radiant.RFLDIR, Radiant.FLDN, Radiant.FLUP]]
         assert_allclose(
             result,
             array(
