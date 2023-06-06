@@ -279,10 +279,103 @@ DisortWrapper *DisortWrapper::Run() {
   return this;
 }
 
-void DisortWrapper::printDisortState() {
-  std::cout << "Levels = " << _ds.nlyr << std::endl;
-  std::cout << "Moments = " << _ds.nmom << std::endl;
-  std::cout << "Streams = " << _ds.nstr << std::endl;
-  std::cout << "Phase functions = " << _ds.nphase << std::endl;
-  std::cout << "Accuracy = " << _ds.accur << std::endl;
+void DisortWrapper::printDisortAtmosphere(std::ostream &os) const {
+  os << "- Levels = " << _ds.nlyr << std::endl;
+  os << "- Moments = " << _ds.nmom << std::endl;
+  os << "- Streams = " << _ds.nstr << std::endl;
+  os << "- Phase functions = " << _ds.nphase << std::endl;
+}
+
+void DisortWrapper::printDisortOutput(std::ostream &os) const {
+  os << "- User azimuthal angles = " << _ds.nphi << std::endl;
+  os << "- User polar angles = " << _ds.numu << std::endl;
+  os << "- User optical depths = " << _ds.ntau << std::endl;
+}
+
+void DisortWrapper::printDisortFlags(std::ostream &os) const {
+  if (_ds.flag.ibcnd) {
+    os << "- Spectral boundary condition (ibcnd) = True" << std::endl;
+  } else {
+    os << "- Spectral boundary condition (ibcnd) = False" << std::endl;
+  }
+
+  if (_ds.flag.usrtau) {
+    os << "- User optical depth (usrtau) = True" << std::endl;
+  } else {
+    os << "- User optical depth (usrtau) = False" << std::endl;
+  }
+
+  if (_ds.flag.usrang) {
+    os << "- User angles (usrang) = True" << std::endl;
+  } else {
+    os << "- User angles (usrang) = False" << std::endl;
+  }
+
+  if (_ds.flag.lamber) {
+    os << "- Lambertian surface (lamber) = True" << std::endl;
+  } else {
+    os << "- Lambertian surface (lamber) = False" << std::endl;
+  }
+
+  if (_ds.flag.planck) {
+    os << "- Planck function (planck) = True" << std::endl;
+  } else {
+    os << "- Planck function (planck) = False" << std::endl;
+  }
+
+  if (_ds.flag.spher) {
+    os << "- Spherical correction (spher) = True" << std::endl;
+  } else {
+    os << "- Spherical correction (spher) = False" << std::endl;
+  }
+
+  if (_ds.flag.onlyfl) {
+    os << "- Only calculate fluxes (onlyfl) = True" << std::endl;
+  } else {
+    os << "- Only calculate fluxes (onlyfl) = False" << std::endl;
+  }
+
+  if (_ds.flag.intensity_correction) {
+    os << "- Intensity correction (intensity_correction) = True" << std::endl;
+  } else {
+    os << "- Intensity correction (intensity_correction) = False" << std::endl;
+  }
+
+  if (_ds.flag.old_intensity_correction) {
+    os << "- Old intensity correction (old_intensity_correction) = True"
+       << std::endl;
+  } else {
+    os << "- Old intensity correction (old_intensity_correction) = False"
+       << std::endl;
+  }
+
+  if (_ds.flag.general_source) {
+    os << "- General source function (general_source) = True" << std::endl;
+  } else {
+    os << "- General source function (general_source) = False" << std::endl;
+  }
+
+  if (_ds.flag.output_uum) {
+    os << "- Output uum (output_uum) = True" << std::endl;
+  } else {
+    os << "- Output uum (output_uum) = False" << std::endl;
+  }
+}
+
+std::string DisortWrapper::ToString() const {
+  std::stringstream ss;
+
+  ss << "Disort is configured with:" << std::endl;
+  printDisortFlags(ss);
+  ss << "- Accuracy = " << _ds.accur << std::endl;
+
+  if (_is_finalized) {
+    printDisortAtmosphere(ss);
+    printDisortOutput(ss);
+    ss << "Disort is finalized." << std::endl;
+  } else {
+    ss << "Disort is not yet finalized." << std::endl;
+  }
+
+  return ss.str();
 }

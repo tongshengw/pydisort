@@ -7,6 +7,7 @@
 #include <pybind11/stl.h>
 #include <toml++/toml.h>
 
+#include <iostream>
 #include <map>
 #include <string>
 #include <tuple>
@@ -61,9 +62,24 @@ class DisortWrapper {
   double umu0;
   double phi0;
 
+  DisortWrapper()
+      : btemp(0.0),
+        ttemp(0.0),
+        fluor(0.0),
+        albedo(0.0),
+        fisot(0.0),
+        fbeam(0.0),
+        temis(0.0),
+        umu0(1.0),
+        phi0(0.0) {
+    _ds.accur = 1.E-6;
+  }
+
   static DisortWrapper *FromFile(std::string_view filename) {
     return fromTomlTable(toml::parse_file(filename));
   }
+
+  std::string ToString() const;
 
   virtual ~DisortWrapper();
 
@@ -75,8 +91,6 @@ class DisortWrapper {
   DisortWrapper *SetFlags(std::map<std::string, bool> const &flags);
 
   DisortWrapper *SetIntensityDimension(int nuphi, int nutau, int numu);
-
-  // void SetFlags(py::dict const& dict);
 
   void Finalize();
 
@@ -129,24 +143,12 @@ class DisortWrapper {
   disort_state _ds;
   disort_output _ds_out;
 
-  DisortWrapper()
-      : btemp(0.0),
-        ttemp(0.0),
-        fluor(0.0),
-        albedo(0.0),
-        fisot(0.0),
-        fbeam(0.0),
-        temis(0.0),
-        umu0(1.0),
-        phi0(0.0) {
-    _ds.accur = 1.E-6;
-  }
-
   bool _is_finalized = false;
   static DisortWrapper *fromTomlTable(const toml::table &table);
 
-  void printDisortState();
-  void printDisortFlags();
+  void printDisortAtmosphere(std::ostream &os) const;
+  void printDisortOutput(std::ostream &os) const;
+  void printDisortFlags(std::ostream &os) const;
 };
 
 // exposing private members for testing
