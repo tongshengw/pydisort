@@ -26,6 +26,7 @@ def check_requirements():
     # For Mac, min is Python3.8
     if sys.version_info < (3, 8) and os_name == 'Darwin':
         sys.stderr.write("Python 3.8 or higher is required.\n")
+        return False
 
     return True
 
