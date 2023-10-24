@@ -10,7 +10,7 @@ set_target_properties(
   PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
              COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}})
 
-target_link_libraries(test_cppdisort.${buildl} ${PYDISORT_LIBRARY_${buildu}}
+target_link_libraries(test_cppdisort.${buildl} ${CPPDISORT_LIBRARY_${buildu}}
                       ${PYTHON_LIBRARY_RELEASE})
 
 target_include_directories(

@@ -3,7 +3,7 @@
 # =============================================
 
 set(namel pydisort)
-file(GLOB src_files pybind_cppdisort.cpp)
+file(GLOB src_files pydisort.cpp)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 # Set module targets
@@ -15,7 +15,7 @@ target_include_directories(
   PRIVATE ${PYDISORT_INCLUDE_DIR} ${CMAKE_BINARY_DIR} ${TOMLPP_INCLUDE_DIR}
           ${CDISORT_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR} ${PYBIND11_INCLUDE_DIR})
 
-target_link_libraries(${namel} PRIVATE ${PYDISORT_LIBRARY_${buildu}}
+target_link_libraries(${namel} PRIVATE ${CPPDISORT_LIBRARY_${buildu}}
                                        ${PYTHON_LIBRARY_RELEASE})
 
 set_target_properties(${namel} PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
