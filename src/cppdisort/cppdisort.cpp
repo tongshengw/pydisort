@@ -231,15 +231,6 @@ void DisortWrapper::Seal() {
     c_disort_state_alloc(&ds_);
     c_disort_out_alloc(&ds_, &ds_out_);
 
-    if (ds_.flag.usrtau) {
-      ds_.utau[0] = 0.0;
-    }
-
-    if (ds_.flag.usrang) {
-      ds_.umu[0] = 1.0;
-      ds_.phi[0] = 0.0;
-    }
-
     is_sealed_ = true;
   }
 }
@@ -347,7 +338,11 @@ DisortWrapper *DisortWrapper::Run() {
   ds_.bc.umu0 = umu0;
   ds_.bc.phi0 = phi0;
 
-  c_disort(&ds_, &ds_out_);
+  int err = c_disort(&ds_, &ds_out_);
+
+  if (err != 0) {
+    throw std::runtime_error("DisortWrapper::Run failed.");
+  }
 
   return this;
 }
@@ -360,19 +355,19 @@ void DisortWrapper::printDisortAtmosphere(std::ostream &os) const {
 }
 
 void DisortWrapper::printDisortOutput(std::ostream &os) const {
-  os << "- User azimuthal angles = " << ds_.nphi << std::endl;
+  os << "- User azimuthal angles = " << ds_.nphi << std::endl << "  : ";
   for (int i = 0; i < ds_.nphi; ++i) {
-    os << "  : " << ds_.phi[i] / M_PI * 180. << ", ";
+    os << ds_.phi[i] / M_PI * 180. << ", ";
   }
   os << std::endl;
-  os << "- User polar angles = " << ds_.numu << std::endl;
+  os << "- User polar angles = " << ds_.numu << std::endl << "  : ";
   for (int i = 0; i < ds_.numu; ++i) {
-    os << "  : " << acos(ds_.umu[i]) / M_PI * 180. << ", ";
+    os << acos(ds_.umu[i]) / M_PI * 180. << ", ";
   }
   os << std::endl;
-  os << "- User optical depths = " << ds_.ntau << std::endl;
+  os << "- User optical depths = " << ds_.ntau << std::endl << "  : ";
   for (int i = 0; i < ds_.ntau; ++i) {
-    os << "  : " << ds_.utau[i] << ", ";
+    os << ds_.utau[i] << ", ";
   }
   os << std::endl;
 }

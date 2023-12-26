@@ -72,6 +72,7 @@ public: // constructor and destructor
   void Seal();
   void Unseal();
   bool IsSealed() const { return is_sealed_; }
+  bool IsFluxOnly() const { return ds_.flag.onlyfl; }
 
   int nLayers() const { return ds_.nlyr; }
   int nMoments() const { return ds_.nmom; }
