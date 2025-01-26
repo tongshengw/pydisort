@@ -1,30 +1,76 @@
-# compile cdisort
+# Install disrot library
+#
+#   library: libdisort_debug.o
+#   library: libdisort_release.o
+#
+# Define the following symbols
+#
+#   DISORT_INCLUDE_DIR
+#   pydisort::disort
+#
+# Normal usage would be:
+#
+#   include_directories(${DISORT_INCLUDE_DIR})
+#   target_link_libraries(pydisort::disort)
 
-set(namel cdisort)
-string(TOUPPER ${namel} nameu)
 
-if(PYTHON_BINDINGS)
-  set(compile_flags_ "${${PROJECT_NAME}_C_FLAGS} -fPIC")
-else()
-  set(compile_flags_ "${${PROJECT_NAME}_C_FLAGS}")
-endif()
-
-file(GLOB src_files *.c)
+include_directories(
+  "${CMAKE_CURRENT_SOURCE_DIR}/.."
+  ${CMAKE_BINARY_DIR}
+  SYSTEM ${TORCH_API_INCLUDE_DIR}
+  SYSTEM ${TORCH_INCLUDE_DIR}
+  )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
-add_library(${namel}_${buildl} STATIC ${src_files})
+set(namel disort)
+string(TOUPPER ${namel} nameu)
 
-set_target_properties(${namel}_${buildl} PROPERTIES COMPILE_FLAGS
-                                                    ${compile_flags_})
+file(GLOB src_files *.cpp)
 
-target_include_directories(${namel}_${buildl} PRIVATE ${CMAKE_BINARY_DIR})
+add_library(${namel}_${buildl}
+    STATIC
+    ${src_files}
+    )
 
-target_link_libraries(${namel}_${buildl} m)
+set_target_properties(${namel}_${buildl}
+    PROPERTIES
+    COMPILE_FLAGS "${CMAKE_CXX_FLAGS_${buildu}}"
+    )
 
-add_library(pydisort::cdisort ALIAS ${namel}_${buildl})
+target_include_directories(${namel}_${buildl}
+    PRIVATE "${FMT_INCLUDE_DIR}"
+    )
 
-set(CDISORT_INCLUDE_DIR
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    CACHE INTERNAL "CDISORT include directory")
+target_link_libraries(${namel}_${buildl}
+    PUBLIC
+    pydisort::cdisort
+    fmt::fmt
+    )
+
+# CUDA source codes
+file(GLOB cu_src_files *.cu)
+
+add_library(${namel}_cuda_${buildl}
+    STATIC
+    ${cu_src_files}
+    )
+
+set_target_properties(${namel}_cuda_${buildl}
+    PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+    )
+
+target_link_libraries(${namel}_cuda_${buildl}
+    PUBLIC
+    CUDA::cudart
+    CUDA::cudart_static
+    )
+
+add_library(pydisort::disort ALIAS ${namel}_${buildl})
+add_library(pydisort::disort_cu ALIAS ${namel}_cuda_${buildl})
+
+set(DISORT_INCLUDE_DIR
+  "${CMAKE_CURRENT_SOURCE_DIR}/.."
+  CACHE INTERNAL "disort include directory")
