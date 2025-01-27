@@ -20,6 +20,11 @@
 
 namespace disort {
 
+DISPATCH_MACRO
+inline double emission_temp(double wlo, double whi, double temp) {
+  return temp;
+}
+
 struct DisortOptions {
   DisortOptions();
 
@@ -28,6 +33,10 @@ struct DisortOptions {
 
   //! set disort flags
   void set_flags(std::string const& flags);
+
+  //! emission function
+  ADD_ARG(std::function<double(double, double, double)>,
+          emission) = emission_temp;
 
   //! header
   ADD_ARG(std::string, header) = "running disort ...";
@@ -47,6 +56,12 @@ struct DisortOptions {
 
   //! user azimuthal angle grid
   ADD_ARG(std::vector<double>, user_phi) = { 0. };
+
+  //! set lower wavenumber(length) at each bin
+  ADD_ARG(std::vector<double>, wave_lower) = {};
+
+  //! set upper wavenumber(length) at each bin
+  ADD_ARG(std::vector<double>, wave_upper) = {};
 
   //! placeholder for disort state
   ADD_ARG(disort_state, ds);
