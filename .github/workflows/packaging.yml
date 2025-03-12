@@ -15,21 +15,19 @@ on:
         required: true
         default: 'false'
 
-env:
-  BUILD_TYPE: Release
-
 jobs:
-  macos-wheel:
-    name: Build macOS wheels
+  macos-arm-wheel:
+    name: Build macOS arm64 wheels
     runs-on: macos-latest
     outputs:
       job-status: ${{ job.status }}
 
     strategy:
       matrix:
-        py: ["38", "39", "310", "311", "312", "313"]
+        py: ["38", "39", "310", "311", "312"]
         deployment_target: ["11.0"]
       fail-fast: true
+
     env:
       MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deployment_target }}
 
@@ -39,24 +37,46 @@ jobs:
         with:
           ref: ${{ github.event.inputs.incoming_ref }}
 
-      - name: Install python modules
-        run: pip install -r requirements.txt
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.16.2
+        env:
+          CIBW_ARCHS_MACOS: arm64
+          CIBW_BUILD: cp${{ matrix.py }}-*
+          CIBW_ENVIRONMENT: "WORKSPACE=${{ github.workspace }}"
 
-      - name: Configure CMake
-        run: |
-          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Archive the built wheels
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./wheelhouse/*.whl
+          name: wheels
 
-      - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+  macos-x86-wheel:
+    name: Build macOS x84_64 wheels
+    runs-on: macos-13
+    outputs:
+      job-status: ${{ job.status }}
+
+    strategy:
+      matrix:
+        py: ["38", "39", "310", "311", "312"]
+        deployment_target: ["11.0"]
+      fail-fast: true
+
+    env:
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deployment_target }}
+
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout the repository
+        with:
+          ref: ${{ github.event.inputs.incoming_ref }}
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         env:
-          # uncomment this to enable passing environment variables
-          #CIBW_ENVIRONMENT: "CMAKE_ARGS=-DPYTHON_VERSION=3.${{ matrix.py }}"
-          # cross compilation with arm64 does not work
-          CIBW_ARCHS_MACOS: universal2
+          CIBW_ARCHS_MACOS: x86_64
           CIBW_BUILD: cp${{ matrix.py }}-*
+          CIBW_ENVIRONMENT: "WORKSPACE=${{ github.workspace }}"
 
       - name: Archive the built wheels
         uses: actions/upload-artifact@v4
@@ -72,34 +92,26 @@ jobs:
 
     strategy:
       matrix:
-        py: ["38", "39", "310", "311", "312", "313"]
+        py: ["38", "39", "310", "311", "312"]
         arch: ["x86_64"]
         libc: ["many"]
       fail-fast: true
 
     steps:
+      - name: Install Python library
+        run: |
+          apt install -y python3.8-dev python3.9-dev python3.10-dev python3.11-dev python3.12-dev
       - uses: actions/checkout@v3
         name: Checkout the repository
         with:
           ref: ${{ github.event.inputs.incoming_ref }}
 
-      - name: Install python modules
-        run: pip install -r requirements.txt
-
-      - name: Configure CMake
-        run: |
-          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-
-      - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         env:
-          # uncomment this to enable passing environment variables
-          #CIBW_ENVIRONMENT: "CMAKE_ARGS=-DPYTHON_VERSION=3.${{ matrix.py }}"
           CIBW_BUILD: cp${{ matrix.py }}-${{ matrix.libc }}linux*
           CIBW_ARCHS: ${{ matrix.arch }}
+          CIBW_ENVIRONMENT: "WORKSPACE=${{ github.workspace }}"
 
       - name: Archive the built wheels
         uses: actions/upload-artifact@v4
@@ -115,7 +127,8 @@ jobs:
       job-status: ${{ job.status }}
 
     needs:
-      - "macos-wheel"
+      - "macos-arm-wheel"
+      - "macos-x86-wheel"
       - "linux-wheel"
 
     steps:

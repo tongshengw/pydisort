@@ -63,6 +63,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compilers.cmake)
 
 message(STATUS "${Blue}${PROJECT_NAME}-2. Setting up system libraries ...${ColorReset}")
 include(${CMAKE_SOURCE_DIR}/cmake/fmt.cmake)
+find_program(Python3_EXECUTABLE NAMES python)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 find_package(Torch REQUIRED)
 if (CUDA)
   find_package(CUDAToolkit REQUIRED)
