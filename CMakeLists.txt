@@ -5,8 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(CUDA "Enable CUDA support" OFF)
-option(BUILD_TESTS "Build tests" OFF)
-option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_TESTS "Build tests" ON)
 
 if (CUDA)
   project(
@@ -86,7 +85,4 @@ if (BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
-if (BUILD_EXAMPLES)
-  message(STATUS "${Blue}${PROJECT_NAME}-5. Setting up examples ...${ColorReset}")
-  add_subdirectory(examples)
-endif()
+message(STATUS "${Blue}${PROJECT_NAME}-5. Setting up examples ...${ColorReset}")
