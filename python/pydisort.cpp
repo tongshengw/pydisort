@@ -51,27 +51,44 @@ PYBIND11_MODULE(pydisort, m) {
 
   >>> import torch
   >>> from pydisort import DisortOptions, Disort
-  >>> op = DisortOptions().header("running disort test").flags("onlyfl")
+  >>> op = DisortOptions().flags("onlyfl,lamber")
   >>> op.ds().nlyr = 4
   >>> op.ds().nstr = 4
   >>> op.ds().nmom = 4
+  >>> op.ds().nphase = 4
   >>> ds = Disort(op)
-  >>> tau = torch.tensor([0.1, 0.2, 0.3, 0.4]).reshape((1,1,4,1))
+  >>> tau = torch.tensor([0.1, 0.2, 0.3, 0.4]).reshape((4,1))
   >>> bc = {"fbeam" : torch.tensor([3.14159]).reshape((1,1))}
-  >>> result = ds.forward(tau, bc, "", None)
+  >>> flx = ds.forward(tau, bc, "", None)
   >>> flx
-  array([[3.14159   , 0.        , 0.        ],
-         [2.84262818, 0.        , 0.        ],
-         [2.32734711, 0.        , 0.        ],
-         [1.72414115, 0.        , 0.        ],
-         [1.15572637, 0.        , 0.        ]])
+  tensor([[[[0.0000, 3.1416],
+          [0.0000, 2.8426],
+          [0.0000, 2.3273],
+          [0.0000, 1.7241],
+          [0.0000, 1.1557]]]])
 
-  In the example above, flx has two dimensions. The first dimension is number of atmosphere
-  levels (nlyr + 1 = 5), and the second dimension is number of extracted flux fields (3).
-  ``RFDLIR``, ``FLDN``, and ``FLUP`` are the indices representing the three flux fields:
-  direct flux, diffuse flux, and upward flux, respectively.
-  Consult ``pydisort.run()`` method for more information on the indices of flux fields.
+  It is important to understand the dimensions of the input and output arrays.
+  The input array `tau` has two dimensions. In order of appearance, they are:
+    (1) The layer dimension (nlyr = 4),
+    (2) The property dimension (nprop = 1).
+
+  Since this problem only has optical thickness, the property dimension is 1.
+  If not specified, both the wavelength/wavenumber dimension and the column dimension
+  are assumed to be 1 and are automatically added internally to the input array.
+
+  The boundary condition dictionary `bc` has one key, `fbeam`, which is the solar beam flux.
+  The key `fbeam` has two dimensions. In order of appearance, they are:
+    (1) The wavelength/wavenumber dimension (nwave = 1),
+    (2) The column dimension (ncol = 1).
+
+  In the example above, flx has four dimensions. In order of appearance, they are:
+    (1) The wavelenth/wavenumber dimension (nwave = 1),
+    (2) The column dimension (ncol = 1),
+    (3) The level dimension (nlvl = nlyr + 1 = 5),
+    (4) The flux field dimension (nflx = 2). The first element is upward flux,
+        and the second element is downward flux.
   The attenuation of radiative flux is according to the Beer-Lambert law, i.e.,
+  The example code above is in `test_attenuation.py`.
 
   .. math::
 
@@ -108,32 +125,13 @@ PYBIND11_MODULE(pydisort, m) {
 
   Troubleshooting
   ---------------
-  - The most common error is "RuntimeError: DisortWrapper::Run failed". When
-    this error occurs, please check the error message printed before the
-    error message. The error message printed before the error message
-    usually provides more information on the cause of the error. Once you identify
-    the cause of the error, you can fix the error by calling ``unseal()`` method,
-    then setting the correct values, and then calling ``seal()`` method again.
-
-  - One common issue that results in "RuntimeError: DisortWrapper::Run failed"
-    is incompatible flags for flux or intensity calculations. For example, ``usrtau``
-    and ``usrang`` flags should set to ``False`` when ``onlyfl`` flag is set to ``True``.
-
-  - Another common issue is setting the wrong values for temperature, optical thickness,
-    single scattering albedo, or phase function moments. All these values must be
-    positive. If you set a negative value, you will get "RuntimeError: DisortWrapper::Run failed".
+  - The most common error is "RuntimeError: DisortImport::forward", which indicates
+    that the disort run has failed. This error is mostly due to incorrect input
+    dimensions or values. The error message shall provide more information on the
+    cause of the error.
 
   - The program should not exit unexpectedly. If the program exits unexpectedly,
     please report the issue to the author (zoey.zyhu@gmail.com).
-
-  Important Dimensions
-  --------------------
-  nlyr
-      number of atmosphere layers
-  nstr
-      number of radiation streams
-  nmom
-      number of phase function moments in addition to the zeroth moment
 
   Tips
   ----
@@ -144,9 +142,6 @@ PYBIND11_MODULE(pydisort, m) {
     are defined on layers.
 
   - You can use ``print()`` method to print some of the DISORT internal states.
-
-  - You can chain methods such as ``set_flags``, ``set_atmosphere_dimension()``,
-    ``set_intensity_dimension()``, and ``seal()`` together.
 
   - If you want to have more insights into DISORT internal inputs,
     you can set the ``print-input`` flag to ``True``.
@@ -186,10 +181,57 @@ PYBIND11_MODULE(pydisort, m) {
       -------
       pmom : List[float]
           Phase function moments, shape (nmom,)
-
       )");
 
-  ADD_DISORT_MODULE(Disort, DisortOptions);
+  ADD_DISORT_MODULE(Disort, DisortOptions)
+      .def_readwrite("options", &disort::DisortImpl::options)
+      .def(
+          "forward",
+          [](disort::DisortImpl &self, torch::Tensor prop,
+             std::map<std::string, torch::Tensor> &bc, std::string bname,
+             torch::optional<torch::Tensor> temf) {
+            while (prop.dim() < 4) {  // (nwave, ncol, nlyr, nprop)
+              prop = prop.unsqueeze(0);
+            }
+            auto prop1 = prop.flip(2);  // from top to bottom
+            return self.forward(prop1, &bc, bname, temf).flip(2);
+          },
+          R"(
+    Calculate radiative flux or intensity
+
+    Parameters
+    ----------
+    prop : torch.Tensor
+        Optical properties at each level (nwave, ncol, nlyr, nprop)
+    bc : Dict[str, torch.Tensor]
+        Dictionary of disort boundary conditions
+        The dimensions of each recognized key are:
+        - <band> + "umu0" : (ncol,), cosine of solar zenith angle
+        - <band> + "phi0" : (ncol,), azimuthal angle of solar beam
+        - <band> + "fbeam" : (nwave, ncol), solar beam flux
+        - <band> + "albedo" : (nwave, ncol), surface albedo
+        - <band> + "fluor" : (nwave, ncol), isotropic bottom illumination
+        - <band> + "fisot" : (nwave, ncol), isotropic top illumination
+        - <band> + "temis" : (nwave, ncol), top emissivity
+        - "btemp" : (ncol,), bottom temperature
+        - "ttemp" : (ncol,), top temperature
+
+        Some keys can have a prefix band name, <band>.
+        If the prefix is an non-empty string, a slash "/" is
+        automatically appended to it, such that the key look like
+        `B1/umu0`. `btemp` and `ttemp` do not have a band name prefix.
+    bname : str
+        Name of the radiation band
+    temf : Optional[torch.Tensor]
+        Temperature at each level (ncol, nlvl = nlyr + 1)
+
+    Returns
+    -------
+    torch.Tensor
+        Radiative flux or intensity (nwave, ncol, nlvl, nrad)
+    )",
+          py::arg("prop"), py::arg("bc"), py::arg("bname") = "",
+          py::arg("temf") = py::none());
 
   bind_disort_options(m);
   bind_phase_options(m);

@@ -43,6 +43,9 @@ struct DisortOptions {
   //! spatial dimensions
   ADD_ARG(int, ncol) = 1;
 
+  //! accuracy
+  ADD_ARG(double, accur) = 1.e-6;
+
   //! user optical depth grid
   ADD_ARG(std::vector<double>, user_tau) = { 0. };
 
