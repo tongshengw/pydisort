@@ -1,144 +1,136 @@
-name: Packaging Tests
+name: Python Wheel Builder
+
 on:
-  push:
-    # Run on tags that look like releases
-    tags:
-      - v*
   workflow_dispatch:
     inputs:
-      incoming_ref:
-        description: 'The ref to checkout before running the workflow'
+      version_tag:
+        description: "Release version tag (e.g., v1.0.0)"
         required: true
-        default: 'main'
-      upload_to_pypi:
-        description: 'Whether to upload to PyPI'
+        default: "v0.10.2"
+      branch:
+        description: "Branch containing workflow YAML"
         required: true
-        default: 'false'
+        default: "test-packaging"
+        type: string
+
+env:
+  BUILD_TYPE: Release
 
 jobs:
-  macos-arm-wheel:
-    name: Build macOS arm64 wheels
-    runs-on: macos-latest
-    outputs:
-      job-status: ${{ job.status }}
-
+  build-wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        py: ["38", "39", "310", "311", "312"]
-        deployment_target: ["11.0"]
-      fail-fast: true
-
-    env:
-      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deployment_target }}
-
-    steps:
-      - uses: actions/checkout@v3
-        name: Checkout the repository
-        with:
-          ref: ${{ github.event.inputs.incoming_ref }}
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
-        env:
-          CIBW_ARCHS_MACOS: arm64
-          CIBW_BUILD: cp${{ matrix.py }}-*
-          CIBW_ENVIRONMENT: "WORKSPACE=${{ github.workspace }}"
-
-      - name: Archive the built wheels
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./wheelhouse/*.whl
-          name: wheels
-
-  macos-x86-wheel:
-    name: Build macOS x84_64 wheels
-    runs-on: macos-13
-    outputs:
-      job-status: ${{ job.status }}
-
-    strategy:
-      matrix:
-        py: ["38", "39", "310", "311", "312"]
-        deployment_target: ["11.0"]
-      fail-fast: true
-
-    env:
-      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deployment_target }}
+        #os: [ubuntu-22.04, macos-14]
+        os: [macos-15]
+        #python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9"]
+        include:
+          #- os: ubuntu-22.04
+          #  arch: x86_64
+          #- os: ubuntu-22.04
+          #  arch: aarch64
+          #- os: macos-14
+          #  arch: x86_64
+          - os: macos-15
+            arch: arm64
 
     steps:
-      - uses: actions/checkout@v3
-        name: Checkout the repository
+      - name: Checkout workflow definition branch (for YAML and scripts)
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.incoming_ref }}
+          ref: ${{ github.event.inputs.branch }}
 
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
-        env:
-          CIBW_ARCHS_MACOS: x86_64
-          CIBW_BUILD: cp${{ matrix.py }}-*
-          CIBW_ENVIRONMENT: "WORKSPACE=${{ github.workspace }}"
-
-      - name: Archive the built wheels
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./wheelhouse/*.whl
-          name: wheels
-
-  linux-wheel:
-    name: Build linux wheels
-    runs-on: ubuntu-latest
-    outputs:
-      job-status: ${{ job.status }}
-
-    strategy:
-      matrix:
-        py: ["38", "39", "310", "311", "312"]
-        arch: ["x86_64"]
-        libc: ["many"]
-      fail-fast: true
-
-    steps:
-      - name: Install Python library
+      - name: Fetch and checkout release tag ${{ github.event.inputs.version_tag }}
         run: |
-          apt install -y python3.8-dev python3.9-dev python3.10-dev python3.11-dev python3.12-dev
-      - uses: actions/checkout@v3
-        name: Checkout the repository
-        with:
-          ref: ${{ github.event.inputs.incoming_ref }}
+          git fetch --tags
+          git checkout ${{ github.event.inputs.version_tag }}
 
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install system dependencies (Linux)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            libopenblas-dev
+
+      - name: Install system dependencies (macOS)
+        if: matrix.os == 'macos-15'
+        run: |
+          brew install cmake ninja openblas
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install -U pip setuptools wheel
+          python -m pip install -r requirements.txt
+
+      - name: Configure CMake
+        run: |
+          cmake -B ${{github.workspace}}/build \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install \
+          -DCMAKE_PREFIX_PATH="$(python -c 'import torch; print(torch.utils.cmake_prefix_path)')" \
+          -DBUILD_TESTS=ON
+
+      - name: Build and Install
+        run: |
+          cmake --build build --target install --config ${{ env.BUILD_TYPE }}
+          pip install .
+
+      - name: Configure build environment
+        run: |
+          VERSION="${{ github.event.inputs.version_tag }}"
+          VERSION="${VERSION#v}"  # Strip the leading 'v'
+          PY_VERSION=$(echo "${{ matrix.python-version }}" | tr -d '.')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "PY_VERSION=$PY_VERSION" >> $GITHUB_ENV
+
+      - name: Build wheel
         env:
-          CIBW_BUILD: cp${{ matrix.py }}-${{ matrix.libc }}linux*
+          CIBW_BUILD: cp${{ env.PY_VERSION }}*
           CIBW_ARCHS: ${{ matrix.arch }}
-          CIBW_ENVIRONMENT: "WORKSPACE=${{ github.workspace }}"
+          CIBW_ENVIRONMENT: "SETUPTOOLS_SCM_PRETEND_VERSION=${{ env.VERSION }}"
+        run: |
+          export MACOSX_DEPLOYMENT_TARGET=15.0
+          TORCH_LIB=$(python -c 'import torch; print(torch.__path__[0] + "/lib")')
+          export TORCH_LIB
+          export DYLD_FALLBACK_LIBRARY_PATH="$TORCH_LIB:$DYLD_FALLBACK_LIBRARY_PATH"
+          python -m pip install cibuildwheel
+          PLATFORM=$([ "${{ matrix.os }}" = "macos-15" ] && echo "macos" || echo "linux")
+          python -m cibuildwheel --platform $PLATFORM --output-dir wheelhouse
 
-      - name: Archive the built wheels
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-${{ matrix.os }}-${{ matrix.arch }}
           path: ./wheelhouse/*.whl
-          name: wheels
 
-  publish-files-to-pypi:
-    name: Publish distribution files to PyPI
-    runs-on: ubuntu-22.04
-
-    outputs:
-      job-status: ${{ job.status }}
-
-    needs:
-      - "macos-arm-wheel"
-      - "macos-x86-wheel"
-      - "linux-wheel"
-
+  upload-pypi:
+    needs: build-wheels
+    runs-on: ubuntu-latest
     steps:
-      - name: Download pre-built wheels
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          path: dist/
-          name: wheels
-      - name: pypi-publish
+          pattern: wheels-*
+          merge-multiple-artifacts: true
+          path: dist
+
+      - name: Flatten distribution directory
+        run: |
+          # Move all wheel files from subdirectories to the dist/ folder.
+          find dist -mindepth 2 -type f -name '*.whl' -exec mv {} dist/ \; || true
+          # Remove any remaining directories under dist.
+          find dist -mindepth 1 -type d -exec rm -rf {} \; || true
+
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
-          password: ${{ secrets.PYDISORT_TOKEN }}
+          password: ${{ secrets.PYPI_API_TOKEN }}

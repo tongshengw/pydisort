@@ -2,12 +2,18 @@
 # pylint: disable = deprecated-module, exec-used
 import os
 import sys
+import sysconfig
 import platform
 import glob
+import torch
 from pathlib import Path
 from setuptools import setup
 from torch.utils import cpp_extension
-import torch
+
+# Determine the torch library directory.
+torch_lib_dir = os.path.join(os.path.dirname(torch.__file__), "lib")
+torch_include_dir = torch.utils.cpp_extension.include_paths()
+site_packages_dir = sysconfig.get_path("purelib")
 
 
 def parse_library_names(libdir):
@@ -26,6 +32,7 @@ def parse_library_names(libdir):
         # remove lib and .so or .a
         library_name = file_name[3:].rsplit(".", 1)[0]
         library_names.append(library_name)
+
     return library_names
 
 
@@ -47,15 +54,39 @@ def check_requirements():
     return True
 
 
-# If the system does not meet requirement, exit.
+# If the system does not meet requirements, exit.
 if not check_requirements():
     sys.exit(1)
 
 # Setup configuration
 current_dir = os.getenv("WORKSPACE")
-
 if not current_dir:
     current_dir = Path().absolute()
+
+# Build a list of library directories.
+# We add both our build directory and the torch library directory.
+lib_dirs = [
+    f"{current_dir}/build/lib",
+    torch_lib_dir,
+    site_packages_dir,
+] + torch_include_dir
+
+# For rpath settings, we want the runtime linker to search the torch library
+# directory. (On macOS, extra_link_args will be used to embed this path
+# into the binary.)
+extra_link_args = []
+if platform.system() == "Darwin":
+    extra_link_args.extend(
+        [
+            f"-Wl,-rpath,{torch_lib_dir}",
+            "-Wl,-rpath,@loader_path/.dylibs",
+            "-Wl,-rpath,@executable_path/.dylibs",
+        ]
+    )
+else:
+    extra_link_args.extend(
+        [f"-Wl,-rpath,{torch_lib_dir}", "-Wl,-rpath,$ORIGIN/.libs"]
+    )
 
 if torch.cuda.is_available():
     setup(
@@ -71,13 +102,20 @@ if torch.cuda.is_available():
                     f"{current_dir}",
                     f"{current_dir}/build",
                     f"{current_dir}/build/_deps/fmt-src/include",
-                ],
-                library_dirs=[f"{current_dir}/build/lib"],
-                libraries=parse_library_names(f"{current_dir}/build/lib"),
+                ]
+                + torch_include_dir,
+                library_dirs=lib_dirs,
+                libraries=[
+                    "torch_global_deps",
+                ]
+                + parse_library_names(f"{current_dir}/build/lib"),
                 extra_compile_args={"nvcc": ["--extended-lambda"]},
+                extra_link_args=extra_link_args,
             )
         ],
-        cmdclass={"build_ext": cpp_extension.BuildExtension},
+        cmdclass={
+            "build_ext": cpp_extension.BuildExtension,
+        },
     )
 else:
     setup(
@@ -92,10 +130,17 @@ else:
                     f"{current_dir}",
                     f"{current_dir}/build",
                     f"{current_dir}/build/_deps/fmt-src/include",
-                ],
-                library_dirs=[f"{current_dir}/build/lib"],
-                libraries=parse_library_names(f"{current_dir}/build/lib"),
+                ]
+                + torch_include_dir,
+                library_dirs=lib_dirs,
+                libraries=[
+                    "torch_global_deps",
+                ]
+                + parse_library_names(f"{current_dir}/build/lib"),
+                extra_link_args=extra_link_args,
             )
         ],
-        cmdclass={"build_ext": cpp_extension.BuildExtension},
+        cmdclass={
+            "build_ext": cpp_extension.BuildExtension,
+        },
     )
