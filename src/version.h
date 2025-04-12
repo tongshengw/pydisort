@@ -1,3 +1,3 @@
 #pragma once
 
-#define PYDISORT_VERSION "0.10.6"
+#define PYDISORT_VERSION "0.10.7"
