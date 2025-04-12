@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <small>[Compare with latest](https://github.com/zoeyzyhu/pydisort/compare/v0.10.6...HEAD)</small>
 
+### Fixed
+
+- Fix bump (#101) ([ebd208e](https://github.com/zoeyzyhu/pydisort/commit/ebd208eea93e43118c573933a3a4416853288284) by Cheng Li).
+- Fix bump (#100) ([e99fe89](https://github.com/zoeyzyhu/pydisort/commit/e99fe89be3d7a1df834902efe98a2323bc58cd6e) by Cheng Li).
+
 <!-- insertion marker -->
 ## [v0.10.6](https://github.com/zoeyzyhu/pydisort/releases/tag/v0.10.6) - 2025-04-10
 
