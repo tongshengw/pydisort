@@ -3,7 +3,7 @@ repos:
   ## 1. Global check =========================================================
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
         name: Trim Trailing Whitespace
@@ -12,6 +12,7 @@ repos:
         exclude: &exclude_pattern |
           (?x)^(
             .*/cdisort\.(c|h)|             # cdisort.c, cdisort.h
+            .*/disort\.hpp|                # disort.hpp
             .*/COPYING|                    # COPYING
             .*/DISORT2\.doc|               # DISORT2.doc
             .*/HOWTO_cdisort|              # HOWTO_cdisort
@@ -46,11 +47,8 @@ repos:
   ## 2. Per language check ===================================================
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v5.0.0
     hooks:
-      - id: pretty-format-json
-        args: ["--autofix", "--indent", "4", "--no-sort-keys"]
-      - id: check-json
       - id: check-yaml
         args: [--allow-multiple-documents]
       - id: requirements-txt-fixer
@@ -73,7 +71,7 @@ repos:
         description: Formats C, C++, Objective-C, and Java code
         types_or: [c, c++, c#, objective-c, java]
         language: python
-        args: [--style=Google, -i, --no-diff]
+        args: [--style=file, -i, --no-diff]
         exclude: *exclude_pattern
 
       - id: cppcheck
@@ -87,7 +85,7 @@ repos:
 
   ## Python related ----------------------------------------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v5.0.0
     hooks:
       - id: check-docstring-first
       - id: check-ast
@@ -119,7 +117,7 @@ repos:
         language: python
         args:
           [
-            "--filter=-legal/copyright,-build/include_subdir,-runtime/references,-build/include_order,-runtime/casting,-whitespace/indent_namespace,-build/include_what_you_use,-readability/fn_size",
+            "--filter=-legal/copyright,-build/include_subdir,-runtime/references,-build/include_order,-runtime/casting,-whitespace/indent_namespace,-build/include_what_you_use,-readability/fn_size,-whitespace/braces",
           ]
         exclude: |
           (?x)^(
