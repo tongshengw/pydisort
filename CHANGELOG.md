@@ -8,9 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 <!-- insertion marker -->
 ## Unreleased
 
-<small>[Compare with latest](https://github.com/zoeyzyhu/pydisort/compare/v0.10.11...HEAD)</small>
+<small>[Compare with latest](https://github.com/zoeyzyhu/pydisort/compare/v0.10.12...HEAD)</small>
 
 <!-- insertion marker -->
+## [v0.10.12](https://github.com/zoeyzyhu/pydisort/releases/tag/v0.10.12) - 2025-04-13
+
+<small>[Compare with v0.10.11](https://github.com/zoeyzyhu/pydisort/compare/v0.10.11...v0.10.12)</small>
+
 ## [v0.10.11](https://github.com/zoeyzyhu/pydisort/releases/tag/v0.10.11) - 2025-04-13
 
 <small>[Compare with v0.10.10](https://github.com/zoeyzyhu/pydisort/compare/v0.10.10...v0.10.11)</small>
