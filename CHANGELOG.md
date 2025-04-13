@@ -8,9 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 <!-- insertion marker -->
 ## Unreleased
 
-<small>[Compare with latest](https://github.com/zoeyzyhu/pydisort/compare/v0.10.8...HEAD)</small>
+<small>[Compare with latest](https://github.com/zoeyzyhu/pydisort/compare/v0.10.9...HEAD)</small>
 
 <!-- insertion marker -->
+## [v0.10.9](https://github.com/zoeyzyhu/pydisort/releases/tag/v0.10.9) - 2025-04-12
+
+<small>[Compare with v0.10.8](https://github.com/zoeyzyhu/pydisort/compare/v0.10.8...v0.10.9)</small>
+
 ## [v0.10.8](https://github.com/zoeyzyhu/pydisort/releases/tag/v0.10.8) - 2025-04-12
 
 <small>[Compare with v0.10.6](https://github.com/zoeyzyhu/pydisort/compare/v0.10.6...v0.10.8)</small>
@@ -189,3 +193,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Removed
 
 - Remove DS_Store hidden file ([2607085](https://github.com/zoeyzyhu/pydisort/commit/2607085ffb128e98cae7edc8a1b3bd421f6653f1) by zoey.zyhu).
+
