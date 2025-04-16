@@ -1,12 +1,8 @@
 name: CI
 
 on:
-  push:
+  pull_request:
     branches: [main]
-
-#on:
-#  pull_request:
-#    branches: [main]
 
 env:
   PYTHON_VERSION: "3.11"
@@ -25,7 +21,15 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install style checkers
-        run: sudo pip install cpplint cppcheck
+        run: pip install --user cpplint cppcheck
+
+      - name: Cache pre-commit
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pre-commit-
 
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.1
@@ -34,6 +38,7 @@ jobs:
     needs: pre-commit
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: true
       matrix:
         os: [ubuntu-latest, macOS-latest]
     steps:
@@ -44,9 +49,20 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: |
+          grep -Ev '^(twine|sphinx|guzzle_sphinx_theme|pre-commit|clang-format|cppcheck|cpplint|pylint|sphinxcontrib-napoleon|setuptools|cmake)$' requirements.txt > filtered_requirements.txt
+          pip install -r filtered_requirements.txt
+
+      - name: Cache CMake build
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/build
+          key: ${{ runner.os }}-cmake-${{ env.BUILD_TYPE }}-${{ hashFiles('**/*.cmake', '**/CMakeLists.txt', '**/*.cpp', '**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-${{ env.BUILD_TYPE }}-
 
       - name: Configure CMake
         run: |
@@ -55,7 +71,7 @@ jobs:
                 -DBUILD_TESTS=ON
 
       - name: Build
-        run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
+        run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Install the project
         run: pip install .
@@ -64,3 +80,4 @@ jobs:
         run: |
           cd ${{ github.workspace }}/build/tests
           ctest --output-on-failure
+          python test_isotropic_scattering.py
