@@ -139,7 +139,7 @@ jobs:
 
   build-linux:
     needs: prepare
-    name: Build
+    name: Build Linux
     runs-on: ubuntu-latest
     if: ${{ inputs.build_os == 'Both' || inputs.build_os == 'Ubuntu' }}
     strategy:
