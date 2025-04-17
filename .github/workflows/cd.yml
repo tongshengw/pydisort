@@ -59,19 +59,23 @@ jobs:
 
   build-macos:
     needs: prepare
-    name: Build macOS
+    name: Build
     runs-on: ${{ matrix.os }}
     if: ${{ inputs.build_os == 'Both' || inputs.build_os == 'MacOS' }}
     strategy:
       fail-fast: true
       matrix:
         os: [macos-latest, macos-13]
+        arch: [arm64, x86_64]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        include:
-          - os: macos-latest
-            arch: arm64
+        exclude:
           - os: macos-13
             arch: x86_64
+            python-version: "3.13"
+          - os: macos-latest
+            arch: x86_64
+          - os: macos-13
+            arch: arm64
 
     steps:
       - name: Checkout code
@@ -135,7 +139,7 @@ jobs:
 
   build-linux:
     needs: prepare
-    name: Build Linux
+    name: Build
     runs-on: ubuntu-latest
     if: ${{ inputs.build_os == 'Both' || inputs.build_os == 'Ubuntu' }}
     strategy:
