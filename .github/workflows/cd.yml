@@ -22,7 +22,6 @@ on:
 env:
   BUILD_TYPE: Release
   LINUX_ARCH: "x86_64"
-  MACOS_ARCH: "arm64"
 
 jobs:
   prepare:
@@ -52,7 +51,7 @@ jobs:
         run: |
           git checkout ${{ steps.determine_version.outputs.version }}
 
-      - name: Strip leading “v”
+      - name: Strip leading “v” of version tag
         id: sanitize
         run: |
           raw=${{ steps.determine_version.outputs.version }}
@@ -60,13 +59,19 @@ jobs:
 
   build-macos:
     needs: prepare
-    name: Build macOS wheels
-    runs-on: macos-latest
+    name: Build macOS
+    runs-on: ${{ matrix.os }}
     if: ${{ inputs.build_os == 'Both' || inputs.build_os == 'MacOS' }}
     strategy:
       fail-fast: true
       matrix:
+        os: [macos-latest, macos-13]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        include:
+          - os: macos-latest
+            arch: arm64
+          - os: macos-13
+            arch: x86_64
 
     steps:
       - name: Checkout code
@@ -79,7 +84,7 @@ jobs:
           PV=$(echo "${{ matrix.python-version }}" | tr -d '.')
           echo "PY_VERSION=$PV" >> $GITHUB_ENV
           echo "MACOSX_DEPLOYMENT_TARGET=11.1" >> $GITHUB_ENV
-          echo "ARCHFLAGS=-arch ${{ env.MACOS_ARCH }}" >> $GITHUB_ENV
+          echo "ARCHFLAGS=-arch ${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -89,14 +94,18 @@ jobs:
 
       - name: Install deps
         run: |
-          pip install numpy torch
+          if [[ "${{ matrix.arch }}" == "x86_64" ]]; then
+            pip install "numpy<2" torch
+          else
+            pip install numpy torch
+          fi
 
       - name: CMake configure
         run: |
           TORCH_CMAKE_PREFIX_PATH=$(python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)')
           cmake -B build \
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-            -DCMAKE_OSX_ARCHITECTURES=${{ env.MACOS_ARCH }} \
+            -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
             -DCMAKE_PREFIX_PATH="$TORCH_CMAKE_PREFIX_PATH"
 
       - name: CMake build
@@ -106,17 +115,9 @@ jobs:
         env:
           CIBW_PLATFORM: macos
           CIBW_BUILD: cp${{ env.PY_VERSION }}*
-          CIBW_ARCHS: ${{ env.MACOS_ARCH }}
+          CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
-            delocate-wheel \
-              --exclude 'libc10.*\.dylib' \
-              --exclude 'libtorch.*\.dylib' \
-              --exclude 'libtorch_cpu.*\.dylib' \
-              --exclude 'libtorch_global_deps.*\.dylib' \
-              --exclude 'libtorch_python.*\.dylib' \
-              --exclude 'libshm.*\.dylib' \
-              --exclude 'libiomp5.*\.dylib' \
-              -w {dest_dir} {wheel}
+            delocate-wheel -e torch -w {dest_dir} {wheel}
           CIBW_BEFORE_BUILD: |
             pip install numpy torch
             cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
@@ -129,12 +130,12 @@ jobs:
       - name: Upload macOS wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-macos-${{ env.MACOS_ARCH }}-${{ matrix.python-version }}
+          name: wheels-macos-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.python-version }}
           path: wheelhouse/*.whl
 
   build-linux:
     needs: prepare
-    name: Build Linux wheels
+    name: Build Linux
     runs-on: ubuntu-latest
     if: ${{ inputs.build_os == 'Both' || inputs.build_os == 'Ubuntu' }}
     strategy:
@@ -161,17 +162,8 @@ jobs:
           CIBW_ARCHS: ${{ env.LINUX_ARCH }}
           CIBW_SKIP: "*musllinux*"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: >
-            TORCH_LIB=$(python -c "import torch; print(torch.__path__[0] + '/lib')") &&
-            LD_LIBRARY_PATH=$TORCH_LIB auditwheel repair \
-              --exclude libtorch*.so \
-              --exclude libtorch*.so.* \
-              --exclude libc10*.so \
-              --exclude libc10*.so.* \
-              --exclude libgomp*.so \
-              --exclude libgomp*.so.* \
-              --exclude libshm*.so \
-              --exclude libshm*.so.* \
-              -w {dest_dir} {wheel}
+            export LD_LIBRARY_PATH=$(python -c "import torch; print(torch.__path__[0] + '/lib')") &&
+            auditwheel repair --exclude lib*.so -w {dest_dir} {wheel}
           CIBW_BEFORE_BUILD: |
             pip install numpy
             pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
