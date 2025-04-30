@@ -24,6 +24,10 @@
   <img alt="GitHub Workflow Status"
     src="https://img.shields.io/github/actions/workflow/status/zoeyzyhu/pydisort/ci.yml?style=flat-square&logo=github"/>
 </a>
+<a href="">
+  <img alt="Documentation Status"
+    src="https://app.readthedocs.org/projects/pydisort/badge/?version=latest&style=flat-square"/>
+</a>
 <!---
 <a href="https://codecov.io/gh/{{REPOSITORY}}">
   <img alt="Codacy coverage"
@@ -204,10 +208,12 @@ In the last dimension, the first element is the upward flux and the second eleme
 Number of levels is one more than the number of layers.
 
 Please note that this is a generic tutorial and you would need to adapt this to your specific use-case.
+Detailed documentation of the function calls can be found at [pydisort documentation](https://pydisort.readthedocs.io/en/latest/).
 
 > 💡 We keep the parameters consistent to the original `DISORT` library, so you can refer to the [DISORT documentation](cdisort213/DISORT2.doc) for more information such as input/out variables, flags, model usage and caveats.
 
-> 💡 One important point to note is that the `pydisort` library assumes that the provided arrays (optical thickness, single scattering albedo, boundary condition etc.) are torch tensors and it throws exceptions if incompatible data types are provided. So, ensure that you are providing data in the right format to avoid any runtime errors.
+> 💡 One important point to note is that the `pydisort` library assumes that the provided arrays (optical thickness, single scattering albedo, boundary condition etc.) have strict dimension requirements because operations are batched over wavenumbers and columns.
+It throws exceptions if incompatible dimensions are provided. So, ensure that you are providing data in the right dimensions to avoid any runtime errors.
 
 <div align="right"><a href="#table-of-contents"><img src="docs/img/top_green_small.png" width="32px"></div>
 
