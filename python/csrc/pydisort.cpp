@@ -72,9 +72,8 @@ PYBIND11_MODULE(pydisort, m) {
     >>> op.ds().nmom = 4
     >>> op.ds().nphase = 4
     >>> ds = Disort(op)
-    >>> tau = torch.tensor([0.1, 0.2, 0.3, 0.4]).reshape((4,1))
-    >>> bc = {"fbeam" : torch.tensor([3.14159]).reshape((1,1))}
-    >>> flx = ds.forward(tau, bc)
+    >>> tau = torch.tensor([0.1, 0.2, 0.3, 0.4]).unsqueeze(-1)
+    >>> flx = ds.forward(tau, fbeam=torch.tensor([3.14159]))
     >>> flx
     tensor([[[[0.0000, 3.1416],
             [0.0000, 2.8426],
@@ -92,8 +91,8 @@ PYBIND11_MODULE(pydisort, m) {
   If not specified, both the wavelength/wavenumber dimension and the column dimension
   are assumed to be 1 and are automatically added internally to the input array.
 
-  The boundary condition dictionary `bc` has one key, `fbeam`, which is the solar beam flux.
-  The key `fbeam` has two dimensions. In order of appearance, they are:
+  The boundary condition for the problem such as the beam illuminance is provided as the keyword argument of the `forward` method.
+  The dimensions are automatically broadcasted to account for the degenerate wavelength/wavenumber and column dimensions:
 
     #. The wavelength/wavenumber dimension (nwave = 1),
     #. The column dimension (ncol = 1).
@@ -247,9 +246,8 @@ PYBIND11_MODULE(pydisort, m) {
             >>> op.ds().nmom = 4
             >>> op.ds().nphase = 4
             >>> ds = Disort(op)
-            >>> tau = torch.tensor([0.1, 0.2, 0.3, 0.4]).reshape((4,1))
-            >>> bc = {"fbeam" : torch.tensor([3.14159]).reshape((1,1))}
-            >>> flx = ds.forward(tau, bc)
+            >>> tau = torch.tensor([0.1, 0.2, 0.3, 0.4]).unsqueeze(-1)
+            >>> flx = ds.forward(tau, fbeam=torch.tensor([3.14159]))
             >>> ds.gather_flx()
         )")
 
@@ -280,16 +278,16 @@ PYBIND11_MODULE(pydisort, m) {
             >>> bc = {
             >>>   "umu0": torch.tensor([0.1]),
             >>>   "phi0": torch.tensor([0.0]),
-            >>>   "albedo": torch.zeros((1, 1)),
-            >>>   "fluor": torch.zeros((1, 1)),
-            >>>   "fisot": torch.zeros((1, 1)),
+            >>>   "albedo": torch.tensor([0.0]),
+            >>>   "fluor": torch.tensor([0.0]),
+            >>>   "fisot": torch.tensor([0.0]),
             >>> }
-            >>> bc["fbeam"] = np.pi / bc["umu0"].reshape((nwave, ncol))
+            >>> bc["fbeam"] = np.pi / bc["umu0"]
             >>> tau = torch.zeros((ncol, nprop))
             >>> tau[0, 0] = ds.options.user_tau()[-1]
             >>> tau[0, 1] = 0.2
             >>> tau[0, 2:] = scattering_moments(nprop - 2, "isotropic")
-            >>> flx = ds.forward(tau, bc)
+            >>> flx = ds.forward(tau, **bc)
             >>> ds.gather_rad()
             tensor([[[[[0.0000, 0.0000, 0.0000, 0.1178, 0.0264, 0.0134],
                        [0.0134, 0.0263, 0.1159, 0.0000, 0.0000, 0.0000]]]]])
@@ -297,16 +295,36 @@ PYBIND11_MODULE(pydisort, m) {
 
       .def(
           "forward",
-          [](disort::DisortImpl &self, torch::Tensor prop,
-             std::map<std::string, torch::Tensor> &bc, std::string bname,
-             torch::optional<torch::Tensor> temf) {
-            while (prop.dim() < 4) {  // (nwave, ncol, nlyr, nprop)
+          [](disort::DisortImpl &self, torch::Tensor prop, std::string bname,
+             torch::optional<torch::Tensor> temf, const py::kwargs &kwargs) {
+            // get bc from kwargs
+            std::map<std::string, torch::Tensor> bc;
+            for (auto item : kwargs) {
+              auto key = py::cast<std::string>(item.first);
+              auto value = py::cast<torch::Tensor>(item.second);
+              bc.emplace(std::move(key), std::move(value));
+            }
+
+            for (auto &[key, value] : bc) {
+              std::vector<std::string> items = {"fbeam", "albedo", "fluor",
+                                                "fisot", "temis"};
+
+              // broadcast dimensions to (nwave, ncol)
+              if (std::find(items.begin(), items.end(), key) != items.end()) {
+                while (value.dim() < 2) {
+                  value = value.unsqueeze(0);
+                }
+              }
+            }
+
+            // broadcast dimensions to (nwave, ncol, nlyr, nprop)
+            while (prop.dim() < 4) {
               prop = prop.unsqueeze(0);
             }
+
             return self.forward(prop, &bc, bname, temf);
           },
-          py::arg("prop"), py::arg("bc"), py::arg("bname") = "",
-          py::arg("temf") = py::none(),
+          py::arg("prop"), py::arg("bname") = "", py::arg("temf") = py::none(),
           R"(
         Calculate radiative flux or intensity
 
@@ -372,9 +390,8 @@ PYBIND11_MODULE(pydisort, m) {
             >>> op.ds().nmom = 4
             >>> op.ds().nphase = 4
             >>> ds = Disort(op)
-            >>> tau = torch.tensor([0.1, 0.2, 0.3, 0.4]).reshape((4,1))
-            >>> bc = {"fbeam" : torch.tensor([3.14159]).reshape((1,1))}
-            >>> flx = ds.forward(tau, bc)
+            >>> tau = torch.tensor([0.1, 0.2, 0.3, 0.4]).unsqueeze(-1)
+            >>> flx = ds.forward(tau, fbeam=torch.tensor([3.14159]))
             >>> flx
             tensor([[[[0.0000, 3.1416],
                     [0.0000, 2.8426],
