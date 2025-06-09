@@ -1,19 +1,24 @@
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
+string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
-# Compile test_cdisort.c
+# Macro to create test for a given source file
+macro(cdisort_setup_test name srcfile)
+  add_executable(${name}.${buildl} ${srcfile} print_test.c)
 
-macro(cdisort_setup_test namel)
-  add_executable(${namel}.${buildl} test_cdisort.c print_test.c)
+  set_target_properties(
+    ${name}.${buildl}
+    PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_${buildu}})
 
-  set_target_properties(${namel}.${buildl}
-                        PROPERTIES COMPILE_FLAGS ${${PROJECT_NAME}_C_FLAGS})
+  target_include_directories(${name}.${buildl}
+    PRIVATE
+    ${DISORT_INCLUDE_DIR}/src
+    ${DISORT_INCLUDE_DIR}/cdisort213)
 
-  target_include_directories(${namel}.${buildl}
-                             PRIVATE ${PYDISORT_INCLUDE_DIR}/src)
+  target_link_libraries(${name}.${buildl} pydisort::cdisort)
 
-  target_link_libraries(${namel}.${buildl} disort::cdisort)
-
-  add_test(NAME ${namel}.${buildl} COMMAND ${namel}.${buildl})
+  add_test(NAME ${name}.${buildl} COMMAND ${name}.${buildl})
 endmacro()
 
-cdisort_setup_test(test_cdisort)
+# Create two separate test executables, second one for large scale test
+cdisort_setup_test(test_cdisort test_cdisort.c)
+cdisort_setup_test(test_cdisort_09 test_cdisort_09.c)
