@@ -1,3 +1,4 @@
+import sys
 import os
 import glob
 import torch
@@ -25,6 +26,17 @@ include_dirs = [
 lib_dirs = [f"{current_dir}/build/lib"]
 libraries = parse_library_names(f"{current_dir}/build/lib")
 
+if sys.platform == "darwin":
+    extra_link_args = [
+        "-Wl,-rpath,@loader_path/lib",
+        "-Wl,-rpath,@loader_path/../torch/lib",
+    ]
+else:
+    extra_link_args = [
+        "-Wl,-rpath,$ORIGIN/lib",
+        "-Wl,-rpath,$ORIGIN/../torch/lib",
+    ]
+
 if torch.cuda.is_available():
     ext_module = cpp_extension.CUDAExtension(
         name="pydisort.pydisort",
@@ -34,6 +46,7 @@ if torch.cuda.is_available():
         library_dirs=lib_dirs,
         libraries=libraries,
         extra_compile_args={"nvcc": ["--extended-lambda"]},
+        extra_link_args=extra_link_args,
     )
 else:
     ext_module = cpp_extension.CppExtension(
@@ -42,6 +55,7 @@ else:
         include_dirs=include_dirs,
         library_dirs=lib_dirs,
         libraries=libraries,
+        extra_link_args=extra_link_args,
     )
 
 setup(
