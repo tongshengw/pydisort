@@ -29,6 +29,6 @@ set_target_properties(${namel}_${buildl}
     COMPILE_FLAGS "${CMAKE_C_FLAGS_${buildu}}"
     )
 
-target_link_libraries(${namel}_${buildl} m)
+target_link_libraries(${namel}_${buildl} m memorypool::memorypool)
 
 add_library(pydisort::cdisort ALIAS ${namel}_${buildl})
