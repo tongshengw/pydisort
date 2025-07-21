@@ -11,6 +11,11 @@ def process_file(input_file_path):
     start_pattern = r"/(?!.*end of).*\(\).*"
     end_pattern = r"/.*end of.*\(\).*"
     preprocessor_pattern = r"#.*"
+    fprintf_pattern = r".*fprintf.*\(.*\).*"
+    fprintf_multiline_pattern = r".*fprintf.*\(.*"
+    malloc_pattern = r".*malloc.*"
+    calloc_pattern = r".*calloc.*"
+    exit_pattern = r".*exit.*"
 
     try:
         with open(input_file_path, "r", encoding="utf-8") as file:
@@ -37,7 +42,32 @@ def process_file(input_file_path):
 
                     while i < len(lines):
                         current_line = lines[i]
-                        content.append(current_line)
+
+                        if re.match(fprintf_pattern, current_line):
+                            processed_line = convert_fprintf_to_printf(
+                                current_line
+                            )
+                            content.append(processed_line)
+                        elif re.match(fprintf_multiline_pattern, current_line):
+                            processed_line = convert_fprintf_partial_line(
+                                current_line
+                            )
+                            content.append(processed_line)
+                        elif re.match(malloc_pattern, current_line):
+                            processed_line = convert_malloc_to_swappablemalloc(
+                                current_line
+                            )
+                            content.append(processed_line)
+                        elif re.match(calloc_pattern, current_line):
+                            processed_line = convert_calloc_to_swappablemalloc(
+                                current_line
+                            )
+                            content.append(processed_line)
+                        elif re.match(exit_pattern, current_line):
+                            processed_line = convert_exit_to_trap(current_line)
+                            content.append(processed_line)
+                        else:
+                            content.append(current_line)
 
                         if re.match(end_pattern, current_line):
                             end_fn_str = process_line_for_filename(
@@ -65,7 +95,7 @@ def process_file(input_file_path):
                             output_file.writelines(
                                 """#include<configure.h>
 
-#include<memorypool.h>
+#include<poolalloc.cuh>
 #include<cdisort.h>
 
 DISPATCH_MACRO
@@ -82,6 +112,48 @@ DISPATCH_MACRO
         print(f"Error: File '{input_file_path}' not found.")
     except Exception as e:
         print(f"Error processing file: {e}")
+
+
+def convert_fprintf_to_printf(code):
+    pattern = r"fprintf\s*\(\s*[^,]+\s*,\s*(.*?)\s*\)"
+
+    def replace_fprintf(match):
+        # Extract everything after the first comma (format string and args)
+        args = match.group(1)
+        return f"printf({args})"
+
+    # Use re.sub to replace all fprintf occurrences
+    converted_code = re.sub(pattern, replace_fprintf, code)
+    return converted_code
+
+
+def convert_fprintf_partial_line(line):
+    pattern = r"fprintf\s*\(\s*([^,]*)\s*,\s*(.*)"
+
+    match = re.search(pattern, line)
+    if match:
+        remaining_args = match.group(2)
+
+        fprintf_start = line.find("fprintf")
+
+        before_fprintf = line[:fprintf_start]
+        converted_line = before_fprintf + "printf(" + remaining_args
+
+        return converted_line
+
+    return line
+
+
+def convert_malloc_to_swappablemalloc(code):
+    return code.replace("malloc", "swappablemalloc")
+
+
+def convert_calloc_to_swappablemalloc(code):
+    return code.replace("calloc", "swappablemalloc")
+
+
+def convert_exit_to_trap(code):
+    return code.replace("exit", "__trap")
 
 
 def process_line_for_filename(line):

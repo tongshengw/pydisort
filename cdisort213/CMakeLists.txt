@@ -32,3 +32,35 @@ set_target_properties(${namel}_${buildl}
 target_link_libraries(${namel}_${buildl} m memorypool::memorypool)
 
 add_library(pydisort::cdisort ALIAS ${namel}_${buildl})
+
+
+
+if (CUDAToolkit_FOUND)
+  file(GLOB cu_src_files cu_src/*.cu)
+
+  add_library(${namel}_cuda_${buildl}
+      OBJECT
+      ${cu_src_files}
+      )
+
+  set_target_properties(${namel}_cuda_${buildl}
+      PROPERTIES
+      CUDA_SEPARABLE_COMPILATION ON
+      )
+
+  target_link_libraries(${namel}_cuda_${buildl}
+      PUBLIC
+    #   $<IF:$<BOOL:${CUDAToolkit_FOUND}>,CUDA::cudart,>
+    #   $<IF:$<BOOL:${CUDAToolkit_FOUND}>,CUDA::cudart_static,>
+    #   $<IF:$<BOOL:${CUDAToolkit_FOUND}>,${TORCH_CUDA_LIBRARY},>
+    #   $<IF:$<BOOL:${CUDAToolkit_FOUND}>,${C10_CUDA_LIBRARY},>
+    m memorypool::memorypool_cu
+  )
+
+  target_include_directories(${namel}_cuda_${buildl}
+      PUBLIC
+      ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+
+  add_library(pydisort::cdisort_cu ALIAS ${namel}_cuda_${buildl})
+endif()

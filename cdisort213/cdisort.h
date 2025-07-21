@@ -25,14 +25,14 @@
 #define __cdisort_h
 
 #ifdef __CUDACC__
-#define DISPATCH_MACRO __host__ __device__
+#define DISPATCH_MACRO __device__
 #else
 #define DISPATCH_MACRO
 #endif
 
-// #ifdef __cplusplus
-// extern "C" {
-// #endif 
+#ifdef __cplusplus
+extern "C" {
+#endif 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1423,8 +1423,8 @@ void disort_test14(void);
 
 /* * * * * * * * * * * * * * * * * * * * * * * end of cdisort.h * * * * * * * * * * * * * * * * * * */
 
-// #ifdef __cplusplus
-// } /* extern "C" */
-// #endif 
+#ifdef __cplusplus
+} /* extern "C" */
+#endif 
 
 #endif
