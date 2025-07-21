@@ -4,7 +4,7 @@
 
 /*
  *   Copyright (c) 2011 by Timothy E. Dowling
- *   
+ *
  *   This file is part of cdisort.
  *
  *   cdisort is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
  *   You should have received a copy of the GNU General Public License
  *   along with cdisort.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 /*
  * DISORT: Discrete Ordinates Radiative Transfer Program
  *
@@ -39,7 +39,7 @@
  *-----------------------REFERENCES (cited in code using the acronyms shown)------------------------------------
  *
  *     BDE: Buras R, Dowling T, Emde C, 201X, ...
- *    DGIS: Devaux C, Grandjean P, Ishiguro Y, Siewert CE, 1979, 
+ *    DGIS: Devaux C, Grandjean P, Ishiguro Y, Siewert CE, 1979,
  *              On Multi-Region Problems in Radiative Transfer, Astrophys. Space Sci. 62, 225-233
  *      GS: Garcia RDM, Siewert CE, 1985, Benchmark Results in Radiative Transfer,
  *              Transport Theory and Statistical Physics 14, 437-483
@@ -48,7 +48,7 @@
  *              approximation, J. Comp. Phys., 102, 265-276
  *       L: Lenoble J, ed, 1985:  Radiative Transfer in Absorbing
  *              and Scattering Atmospheres: Standard Computational Procedures, Deepak Publishing, Hampton, Virginia
- *      NT: Nakajima T, Tanaka M, 1988,  Algorithms for Radiative Intensity Calculations in 
+ *      NT: Nakajima T, Tanaka M, 1988,  Algorithms for Radiative Intensity Calculations in
  *              Moderately Thick Atmospheres Using a Truncation Approximation, J.Q.S.R.T. 40, 51-69
  *      OS: Ozisik M, Shouman S, 1980,  Source Function Expansion Method for Radiative Transfer in a Two-Layer
  *              Slab, J.Q.S.R.T. 24, 441-449
@@ -314,7 +314,7 @@
    delm0.............Kronecker delta, delta-sub-M0, where M = MAZIM is the number of the Fourier component in the
                      azimuth cosine expansion
    deltam............TRUE,  use delta-M method ( see Wiscombe, 1977 );
-                     FALSE, do not use delta-M method. 
+                     FALSE, do not use delta-M method.
                      In general, for a given number of streams, intensities and fluxes will be more accurate for phase functions
                      with a large forward peak if DELTAM is set true. Intensities close to the forward scattering
                      direction are often less accurate, however, when the delta-M method is applied. The intensity deltam
@@ -391,7 +391,7 @@
    ZPLK0(iq,lc)......Permanent storage for the thermal source vectors plk[].zero obtained by solving eq. SS(16)
    ZPLK1(iq,lc)......Permanent storage for the thermal source vectors plk[].one  obtained by solving eq. SS(16)
 
-*/ 
+*/
 
 int c_disort(disort_state  *ds,
 	      disort_output *out,
@@ -467,7 +467,7 @@ int c_disort(disort_state  *ds,
     }
   }
 
-  /* 
+  /*
    * Turn on delta-M tranformation
    */
   deltam = TRUE;
@@ -489,7 +489,7 @@ int c_disort(disort_state  *ds,
    * is no beam source, no scattering, or delta-M transformation is not applied
    */
   corint = ds->flag.intensity_correction;
-  if (ds->flag.onlyfl || ds->bc.fbeam == 0. || !scat_yes || !deltam) 
+  if (ds->flag.onlyfl || ds->bc.fbeam == 0. || !scat_yes || !deltam)
     corint = FALSE;
 
   prntu0[0] = FALSE;
@@ -519,7 +519,7 @@ int c_disort(disort_state  *ds,
    *-------------------------------------------------------------------------------------------*/
 
   if (ds->flag.ibcnd == SPECIAL_BC) {
-    /* 
+    /*
      * Allocate zeroed memory
      */
     array    = c_dbl_vector(0,ds->nstr*ds->nstr-1,"array");
@@ -597,7 +597,7 @@ int c_disort(disort_state  *ds,
    * General case *
    *--------------*/
 
-  /* 
+  /*
    * Allocate zeroed memory
    */
   array   = c_dbl_vector(0,ds->nstr*ds->nstr-1,"array");
@@ -670,7 +670,7 @@ int c_disort(disort_state  *ds,
 
   /*
    * Zero output arrays
-   */ 
+   */
   if (!ds->flag.usrtau) {
     memset(ds->utau,0,ds->ntau*sizeof(double));
   }
@@ -716,11 +716,11 @@ int c_disort(disort_state  *ds,
   /*
    * Azimuth-independent case
    */
-  if (ds->bc.fbeam == 0.                         || 
-      fabs(1.-ds->bc.umu0) < 1.e-5               || 
-      ds->flag.onlyfl                            || 
-      (ds->numu == 1 && fabs(1.-UMU(1)) < 1.e-5) || 
-      (ds->numu == 1 && fabs(1.+UMU(1)) < 1.e-5) || 
+  if (ds->bc.fbeam == 0.                         ||
+      fabs(1.-ds->bc.umu0) < 1.e-5               ||
+      ds->flag.onlyfl                            ||
+      (ds->numu == 1 && fabs(1.-UMU(1)) < 1.e-5) ||
+      (ds->numu == 1 && fabs(1.+UMU(1)) < 1.e-5) ||
       (ds->numu == 2 && fabs(1.+UMU(1)) < 1.e-5 && fabs(1.-UMU(2)) < 1.e-5)) {
     naz = 0;
   }
@@ -784,7 +784,7 @@ int c_disort(disort_state  *ds,
 	  c_set_coefficients_beam_source(ds,ch,chtau,cmu,delm0,ds->bc.fbeam,
 					 gl,lc,mazim,ds->nstr,
 					 taucpr,xba,xb,ylm0,ylmc,zj);
-	  
+
 	  if ( ds->flag.usrang == TRUE  ) {
 	    /* Get coefficients at umu for pseudo-spherical source */
 	    c_interp_coefficients_beam_source(ds,chtau,delm0,ds->bc.fbeam,
@@ -802,7 +802,7 @@ int c_disort(disort_state  *ds,
       }
 
       /*
-       * Calculate particular solutions of eq. SS(18), STWL(24a), KS(5) for 
+       * Calculate particular solutions of eq. SS(18), STWL(24a), KS(5) for
        * general user specified source.
        */
       if (ds->flag.general_source) {
@@ -900,10 +900,10 @@ int c_disort(disort_state  *ds,
       }
 
       if ( ds->flag.output_uum)
-	for (lu = 1; lu <= ds->ntau; lu++) 
+	for (lu = 1; lu <= ds->ntau; lu++)
 	  for (iu = 1; iu <= ds->numu; iu++)
             OUT_UUM(iu,lu,mazim) = UUM(iu,lu);
-      
+
       /*
        * Print azimuthally averaged intensities at user angles
        */
@@ -934,8 +934,8 @@ int c_disort(disort_state  *ds,
         }
       }
       if ( ds->flag.output_uum)
-	for (lu = 1; lu <= ds->ntau; lu++) 
-	  for (iu = 1; iu <= ds->numu; iu++) 
+	for (lu = 1; lu <= ds->ntau; lu++)
+	  for (iu = 1; iu <= ds->numu; iu++)
             OUT_UUM(iu,lu,mazim) = UUM(iu,lu);
 
       if(azerr <= ds->accur) {
@@ -964,13 +964,13 @@ int c_disort(disort_state  *ds,
       c_new_intensity_correction(ds,out,dither,flyr,layru,lyrcut,ncut,oprim,phasa,phast,phasm,phirad,tauc,taucpr,utaupr);
     }
     else {
-      if (ds->flag.quiet==VERBOSE) 
+      if (ds->flag.quiet==VERBOSE)
 	fprintf(stderr,"Using original intensity correction, with phase moments\n");
       c_intensity_correction(ds,out,dither,flyr,layru,lyrcut,ncut,oprim,phasa,phast,phasm,phirad,tauc,taucpr,utaupr);
     }
   }
 
-  
+
   for (iu = 1; iu <= ds->numu; iu++) {
     lu = ds->ntau;
     j =  1;
@@ -996,7 +996,7 @@ int c_disort(disort_state  *ds,
 
   callnum++;
 
-  /* 
+  /*
    * Free allocated memory
    */
   free(ab),free(array);
@@ -1051,7 +1051,7 @@ int c_disort(disort_state  *ds,
 
     ans       :  Return variable
     badmu     :  minimally allowed value for mu1 and mu2
-    flxalb    :  
+    flxalb    :
     irmu      :
     rmu       :
     swvnmlo   : value of wvnmlo from last call of this routine
@@ -1111,7 +1111,7 @@ double c_bidir_reflectivity ( double       wvnmlo,
     if ( swvnmlo != wvnmlo      ||
 	 swvnmhi != wvnmhi      ||
 	 srho0   != brdf->rpv->rho0   ||
-	 sk      != brdf->rpv->k      ||	   	   
+	 sk      != brdf->rpv->k      ||
 	 stheta  != brdf->rpv->theta  ||
 	 ssigma  != brdf->rpv->sigma  ||
 	 st1     != brdf->rpv->t1     ||
@@ -1157,7 +1157,7 @@ double c_bidir_reflectivity ( double       wvnmlo,
      * NOTE: Should group brdf->cam input arguments into the single pointer brdf->cam,
      *       in the same manner as brdf->rpv for c_bidir_reflectivity_rpv().
      */
-    ans = ocean_brdf ( wvnmlo, wvnmhi, mu, mup, dphi, 
+    ans = ocean_brdf ( wvnmlo, wvnmhi, mu, mup, dphi,
 		       brdf->cam->u10, brdf->cam->pcl, brdf->cam->xsal, callnum);
 
     /* remove BRDFs smaller than 0 */
@@ -1252,11 +1252,11 @@ double c_bidir_reflectivity ( double       wvnmlo,
 
 /*============================= c_bidir_reflectivity_hapke() ============*/
 
-/*    
+/*
  * Hapke's BRDF model (times Pi/Mu0):
- *   Hapke, B., Theory of reflectance and emittance spectroscopy, Cambridge University Press, 1993, 
+ *   Hapke, B., Theory of reflectance and emittance spectroscopy, Cambridge University Press, 1993,
  * eq. 8.89 on page 233. Parameters are from Fig. 8.15 on page 231, except for w.
-     
+
   INPUT:
 
     wvnmlo : Lower wavenumber (inv cm) of spectral interval
@@ -1306,7 +1306,7 @@ double c_bidir_reflectivity_hapke ( double wvnmlo,
 
   return .25*w*((1.+b)*p+h0*h-1.0)/(mu+mup);
 }
-  
+
 /*============================= end of c_bidir_reflectivity_hapke() =====*/
 
 /*============================= c_bidir_reflectivity_rpv() ==============*/
@@ -1315,12 +1315,12 @@ double c_bidir_reflectivity_hapke ( double wvnmlo,
   Computes the Rahman, Pinty, Verstraete BRDF.  The incident
   and outgoing cosine zenith angles are MU1 and MU2, respectively,
   and the relative azimuthal angle is PHI.  In this case the incident
-  direction is where the radiation is coming from, so MU1>0 and 
+  direction is where the radiation is coming from, so MU1>0 and
   the hot spot is MU2=MU1 and PHI=180 (the azimuth convention is
-  different from the original Frank Evans code). 
+  different from the original Frank Evans code).
   The reference is:
-  Rahman, Pinty, Verstraete, 1993: Coupled Surface-Atmosphere 
-  Reflectance (CSAR) Model. 2. Semiempirical Surface Model Usable 
+  Rahman, Pinty, Verstraete, 1993: Coupled Surface-Atmosphere
+  Reflectance (CSAR) Model. 2. Semiempirical Surface Model Usable
   With NOAA Advanced Very High Resolution Radiometer Data,
   J. Geophys. Res., 98, 20791-20801.
 
@@ -1359,18 +1359,18 @@ double c_bidir_reflectivity_rpv ( rpv_brdf_spec *brdf,
     hspot, t, g;
   double ans;
 
-  /* This function needs more checking; some constraints are 
+  /* This function needs more checking; some constraints are
      required to avoid albedos larger than 1; in particular,
      the BDREF is limited to 5 times the hotspot value to
      avoid extremely large values at low polar angles */
 
 
   /* Azimuth convention different from Frank Evans:
-     Here PHI=0 means the backward direction while 
+     Here PHI=0 means the backward direction while
      while in DISORT PHI=0 means forward. */
   phi = M_PI - phi;
 
-  /* Don't allow mu's smaller than BADMU because 
+  /* Don't allow mu's smaller than BADMU because
      the albedo is larger than 1 for those */
   if ( badmu > 0.0 ) {
     if ( mu1 < badmu )
@@ -1380,16 +1380,16 @@ double c_bidir_reflectivity_rpv ( rpv_brdf_spec *brdf,
   }
 
   /* Hot spot */
-  hspot = brdf->rho0 * ( pow ( 2.0 * mu1 * mu1 * mu1 , brdf->k - 1.0 ) * 
+  hspot = brdf->rho0 * ( pow ( 2.0 * mu1 * mu1 * mu1 , brdf->k - 1.0 ) *
 		   ( 1.0 - brdf->theta ) / ( 1.0 + brdf->theta ) / ( 1.0 + brdf->theta )
-		   *  ( 2.0 - brdf->rho0 ) 
+		   *  ( 2.0 - brdf->rho0 )
 		   + brdf->sigma / mu1 ) * ( brdf->t1 * exp ( M_PI * brdf->t2 ) + 1.0 );
 
   /* Hot spot region */
   /* is this bug??? phi <= 1e-4 would be more sensible ... RPB */
   if (phi == 1e-4 && mu1 == mu2)
     return hspot * brdf->scale;
-      
+
   m = pow ( mu1 * mu2 * ( mu1 + mu2 ) , brdf->k - 1.0 );
   cosphi = cos(phi);
   sin1 = sqrt ( 1.0 - mu1 * mu1 );
@@ -1406,7 +1406,7 @@ double c_bidir_reflectivity_rpv ( rpv_brdf_spec *brdf,
   t = 1.0 + brdf->t1 * exp ( brdf->t2 * ( M_PI - g ) );
 
   ans = brdf->rho0 * ( m * f * h + brdf->sigma / mu1 ) * t * brdf->scale;
-      
+
  if (ans < 0.0)
    ans = 0.0;
 
@@ -1433,7 +1433,7 @@ double c_bidir_reflectivity_rpv ( rpv_brdf_spec *brdf,
  *  OUTPUT
  *    PMOM(k) Legendre expansion coefficients (k = 0 to nmom)
  *
- * Reference:  Garcia, R. and C. Siewert, 1985: Benchmark Results in Radiative Transfer, 
+ * Reference:  Garcia, R. and C. Siewert, 1985: Benchmark Results in Radiative Transfer,
  *               Transp. Theory and Stat. Physics 14, 437-484, Tables 10 And 17
  */
 
@@ -1474,7 +1474,7 @@ void c_getmom(int    iphas,
   register int
     k;
 
-  /* 
+  /*
    * Screen for invalid inputs
    */
   if (iphas < FIRST_IPHAS || iphas > LAST_IPHAS) {
@@ -1528,13 +1528,13 @@ void c_getmom(int    iphas,
   of a subroutine EIGRF in the IMSL library to use real instead of complex
   arithmetic, accounting for the known fact that the eigenvalues and
   eigenvectors in the discrete ordinate solution are real.
-  
+
   EIGRF is based primarily on EISPACK routines.  The matrix is first
   balanced using the Parlett-Reinsch algorithm.  Then the Martin-Wilkinson
   algorithm is applied. There is a statement 'j = wk(i)' that converts a
   double precision variable to an integer variable; this seems dangerous
   to us in principle, but seems to work fine in practice.
-  
+
   References:
 
   Dongarra, J. and C. Moler, EISPACK -- A Package for Solving Matrix
@@ -1563,7 +1563,7 @@ void c_getmom(int    iphas,
    S C R A T C H   V A R I A B L E S:
 
        wk    :  work area (dimension at least 2*m)
-       
+
    Called by- c_solve_eigen
    Calls- c_errmsg
  -------------------------------------------------------------------*/
@@ -2578,7 +2578,7 @@ void c_intensity_correction(disort_state  *ds,
        */
       ctheta = -ds->bc.umu0*UMU(iu)+sqrt((1.-SQR(ds->bc.umu0))*(1.-SQR(UMU(iu))))*cos(PHIRAD(jp));
        /*
-        * Initialize phase function                              
+        * Initialize phase function
         */
       for (lc = 1; lc <= ncut; lc++) {
         PHASA(lc) = 1.;
@@ -2641,7 +2641,7 @@ void c_intensity_correction(disort_state  *ds,
 	    UU(iu,lu,jp) -= duims;
           }
         }
-      } 
+      }
     } /* end loop over azimuth angles */
   } /* end loop over zenith angles */
 
@@ -3000,7 +3000,7 @@ void c_new_intensity_correction(disort_state  *ds,
        */
       ctheta = -ds->bc.umu0*UMU(iu)+sqrt((1.-SQR(ds->bc.umu0))*(1.-SQR(UMU(iu))))*cos(PHIRAD(jp));
       /*
-       * Initialize phase function                              
+       * Initialize phase function
        */
       for (lc = 1; lc <= ncut; lc++) {
         PHASM(lc) = 1.;
@@ -3069,7 +3069,7 @@ void c_new_intensity_correction(disort_state  *ds,
 	    UU(iu,lu,jp) -= duims;
           }
         }
-      } 
+      }
     } /* end loop over azimuth angles */
   } /* end loop over zenith angles */
 
@@ -3091,7 +3091,7 @@ void c_new_intensity_correction(disort_state  *ds,
 
        nphase    number of angles for which original phase function
                      (ds->phase) is defined
-       ntau      
+       ntau
        nf        number of angular phase integration grid point
                      (zenith angle, theta)
        mu_phase  cos(theta) grid of phase function
@@ -3409,7 +3409,7 @@ double calc_phase_squared (int           nphase,
 	  Dp = ( PHAS2(k+1,lu) - PHAS2(k,lu) ) / ( MUP(k+1) - MUP(k) );
 	  Cp = PHAS2(k,lu) - MUP(k) * Dp;
 
-	  phint += 
+	  phint +=
 	    ( Dp - D ) * sqrt ( 1.0 - ctheta * ctheta
 				- MU_EQ(j,lu) * MU_EQ(j,lu)
 				+ 2.0 * ctheta * MU_EQ(j,lu) * MUP(k)
@@ -3471,12 +3471,12 @@ double calc_phase_squared (int           nphase,
 
        If ds->flag.usrtau is FALSE
        ds->ntau
-       ds->utau 
+       ds->utau
 
        If ds->flag.usrang is FALSE
        ds->numu
        ds->umu
-  
+
        cmu,cwt     computational polar angles and corresponding quadrature weights
        dtaucpr
        expbea      transmission of direct beam
@@ -3578,7 +3578,7 @@ void c_disort_set(disort_state *ds,
     CHTAU(0)  = 0.;
     EXPBEA(0) = 1.;
     zenang    = acos(ds->bc.umu0)/DEG;
-    
+
     if( ds->flag.spher == TRUE && ds->bc.umu0 < 0. ) {
       EXPBEA(0) = exp(-c_chapman(1,0.,tauc,ds->nlyr,ds->zd,
 				 ds->dtauc,zenang,ds->radius));
@@ -3619,7 +3619,7 @@ void c_disort_set(disort_state *ds,
   }
   if(!*lyrcut) *ncut = ds->nlyr;
 
-  /* 
+  /*
    * Set arrays defining location of user output levels within delta-M-scaled computational mesh
    */
   for (lu = 1; lu <= ds->ntau; lu++) {
@@ -3655,7 +3655,7 @@ void c_disort_set(disort_state *ds,
     /*
      * Compare beam angle to comput. angles
      */
-    for (iq = 1; iq <= *nn; iq++) {      
+    for (iq = 1; iq <= *nn; iq++) {
       if (fabs(ds->bc.umu0-CMU(iq))/fabs(ds->bc.umu0) < 1.e-4) {
         // suppress error msg by adding a small difference
         ds->bc.umu0 = (1. + 1.E-4)*CMU(iq);
@@ -3717,7 +3717,7 @@ void c_disort_set(disort_state *ds,
 
    O U T P U T     V A R I A B L E S:
 
-       cband    :  Left-hand side matrix of linear system eq. SC(5), scaled by eq. SC(12); 
+       cband    :  Left-hand side matrix of linear system eq. SC(5), scaled by eq. SC(12);
                    in banded form required by LINPACK solution routines
        ncol     :  Number of columns in cband
 
@@ -3879,7 +3879,7 @@ void c_set_matrix(disort_state *ds,
     for (jq = nn+1; jq <= ds->nstr; jq++) {
       if (lyrcut || ( ds->flag.lamber && delm0 == 0. ) ) {
         /*
-         * No azimuthal-dependent intensity if Lambert surface; 
+         * No azimuthal-dependent intensity if Lambert surface;
          * no intensity component if truncated bottom layer
          */
         CBAND(irow,nncol) = GC(jq,iq,ncut);
@@ -3927,7 +3927,7 @@ void c_set_matrix(disort_state *ds,
         Calculates single-scattered intensity from eqs. STWL (65b,d,e)
 
                 I N P U T   V A R I A B L E S
-        
+
         dither   small multiple of machine precision
         layru    index of utau in multi-layered system
         nlyr     number of sublayers
@@ -4112,7 +4112,7 @@ void c_solve_eigen(disort_state *ds,
     APB(iq,iq) -= 1./CMU(iq);
   }
   /*
-   * Finish calculation of coefficient matrix of reduced eigenvalue problem: 
+   * Finish calculation of coefficient matrix of reduced eigenvalue problem:
    * get matrix product (alpha+beta)*(alpha-beta); SS(12),STWL(23f)
    */
   for (iq = 1; iq <= nn; iq++) {
@@ -4169,7 +4169,7 @@ void c_solve_eigen(disort_state *ds,
       /*
        * Eigenvectors corresponding to negative eigenvalues (corresp. to reversing sign of 'k' in SS(10) )
        */
-      gpplgm *= -1; 
+      gpplgm *= -1;
       EVECC(iq,   jq+nn)     = .5*(gpplgm+gpmigm);
       EVECC(iq+nn,jq+nn)     = .5*(gpplgm-gpmigm);
       GC(nn+iq,  nn+jq,  lc) = EVECC(iq,   jq   );
@@ -4265,9 +4265,9 @@ void c_solve0(disort_state *ds,
     ipnt,iq,it,jq,lc,ncd;
   double
     rcond,sum,diff;
-  
+
   memset(b,0,ds->nstr*ds->nlyr*sizeof(double));
-  
+
   /*
    * Construct B, STWJ(20a,c) for parallel beam+bottom
    * reflection+thermal emission at top and/or bottom
@@ -4425,15 +4425,15 @@ void c_solve0(disort_state *ds,
     }
     else {
       if ( ds->flag.spher == TRUE ) {
-	for (iq = 1; iq <= nn; iq++) 
+	for (iq = 1; iq <= nn; iq++)
 	  B(iq) = -ZBEAM0(nn+1-iq,1)-ZPLK0(nn+1-iq,1)+ds->bc.fisot+tplanck;
       }
       else {
-	for (iq = 1; iq <= nn; iq++) 
+	for (iq = 1; iq <= nn; iq++)
 	  B(iq) = -ZZ(nn+1-iq,1)-ZPLK0(nn+1-iq,1)+ds->bc.fisot+tplanck;
       }
       if ( ds->flag.general_source == TRUE ) {
-	for (iq = 1; iq <= nn; iq++) 
+	for (iq = 1; iq <= nn; iq++)
 	  B(iq) -= ZZG(nn+1-iq,1);
 	//aky	  B(iq) = B(iq) - ZZG(nn+1-iq,1);
       }
@@ -4452,7 +4452,7 @@ void c_solve0(disort_state *ds,
 	  }
 	}
 	if ( ds->flag.general_source == TRUE ) {
-	  for (iq = 1; iq <= nn; iq++) 
+	  for (iq = 1; iq <= nn; iq++)
 	    B(ncol-nn+iq) -= ZZG(iq+nn,ncut);
 	  //aky	    B(ncol-nn+iq) = B(ncol-nn+iq) - ZZG(iq+nn,ncut);
 	}
@@ -4559,6 +4559,8 @@ void c_solve0(disort_state *ds,
 
   return;
 }
+/*============================= end of c_solve0() =======================*/
+
 
 /*============================= c_surface_bidir() =======================*/
 
@@ -4612,7 +4614,7 @@ void c_surface_bidir(disort_state *ds,
     dref,sum;
   static double
     gmu[NMUG],gwt[NMUG];
-  
+
   if (pass1) {
     pass1 = FALSE;
     c_gaussian_quadrature(NMUG/2,gmu,gwt);
@@ -4642,7 +4644,7 @@ void c_surface_bidir(disort_state *ds,
       for (jq = 1; jq <= nn; jq++) {
         sum = 0.;
         for (k = 1; k <= NMUG; k++) {
-          sum += GWT(k) * 
+          sum += GWT(k) *
 	    c_bidir_reflectivity ( ds->wvnmlo, ds->wvnmhi, CMU(iq), CMU(jq),
 				   M_PI * GMU(k), ds->flag.brdf_type, &ds->brdf, callnum)
 	    * cos((double)mazim * M_PI * GMU(k) );
@@ -4986,7 +4988,7 @@ void c_interp_source(disort_state   *ds,
        nstr   :   number of streams
        numu   :   number of user angles
        taucpr :   delta-m-scaled optical depth
-       xba    :   alfa in eq. KS(7) 
+       xba    :   alfa in eq. KS(7)
        ylmu   :   Normalized associated Legendre polynomial at the user angles -umu-
        ylm0   :   Normalized associated Legendre polynomial at the beam angle
 
@@ -5016,17 +5018,17 @@ void c_interp_coefficients_beam_source(disort_state   *ds,
 				       double         *ylm0,
 				       double         *ylmu)
 {
-  register int 
+  register int
     iu,k;
-  double 
+  double
     deltat,sum,q0a,q2a,q0,q2;
-  
+
   /*     Calculate x-sub-zero in STWJ(6d) */
   deltat = TAUCPR(lc) - TAUCPR(lc-1);
 
   q0a = exp(-CHTAU(lc-1));
   q2a = exp(-CHTAU(lc));
-     
+
   for (iu = 1; iu <= numu; iu++) {
     sum = 0.0;
     for (k = mazim; k <= nstr-1; k++) {
@@ -5036,10 +5038,10 @@ void c_interp_coefficients_beam_source(disort_state   *ds,
   }
 
   for (iu = 1; iu <= numu; iu++) {
-     
+
     q0 = q0a*ZJU(iu);
     q2 = q2a*ZJU(iu);
-     
+
     /*     x-sub-zero and x-sub-one in Eqs. KS(48-49)   */
 
     ZB1U(iu,lc)=(1./deltat)*(q2*exp(XBA(lc)*TAUCPR(lc))
@@ -5050,7 +5052,7 @@ void c_interp_coefficients_beam_source(disort_state   *ds,
   return;
 
 }
-/*============================= end c_interp_coefficients_beam_source ===*/
+/*============================= end of c_interp_coefficients_beam_source() =*/
 
 /*============================= c_set_coefficients_beam_source() ========*/
 
@@ -5074,7 +5076,7 @@ void c_interp_coefficients_beam_source(disort_state   *ds,
 
     O U T P U T     V A R I A B L E S:
 
-       xba    :   alfa in eq. KS(7) 
+       xba    :   alfa in eq. KS(7)
        xb0    :   x-sub-zero in KS(7)
        xb1    :   x-sub-one in KS(7)
        zj     :  Solution vector Z-sub-zero after solving eq. SS(19), STWL(24b)
@@ -5085,7 +5087,7 @@ void c_interp_coefficients_beam_source(disort_state   *ds,
 void c_set_coefficients_beam_source(disort_state *ds,
 				    double       *ch,
 				    double       *chtau,
-				    double       *cmu, 
+				    double       *cmu,
 				    double        delm0,
 				    double        fbeam,
 				    double       *gl,
@@ -5100,9 +5102,9 @@ void c_set_coefficients_beam_source(disort_state *ds,
 				    double       *zj)
 {
 
-  register int 
+  register int
     iq,k;
-  double 
+  double
     deltat,sum,q0a,q2a,q0,q2;
   static double
     big;
@@ -5123,11 +5125,11 @@ void c_set_coefficients_beam_source(disort_state *ds,
   q2a = exp( -CHTAU(lc) );
 
   /*     Calculate alfa coefficient  */
-     
+
   deltat = TAUCPR(lc) - TAUCPR(lc-1);
 
   XBA(lc) = 1./CH(lc);
-        
+
   if ( fabs(XBA(lc)) > big  &&  TAUCPR(lc) > 1.)  XBA(lc) = 0.0;
 
   if( fabs(XBA(lc)*TAUCPR(lc)) > log(big))	  XBA(lc) = 0.0;
@@ -5136,7 +5138,7 @@ void c_set_coefficients_beam_source(disort_state *ds,
 
   if (  fabs(XBA(lc)) > 0.00001 ) {
     for (iq = 1; iq <= nstr/2; iq++) {
-      if (fabs((fabs(XBA(lc))-1.0/CMU(iq))/XBA(lc) ) < 0.05 ) XBA(lc) = XBA(lc) * 1.001;      
+      if (fabs((fabs(XBA(lc))-1.0/CMU(iq))/XBA(lc) ) < 0.05 ) XBA(lc) = XBA(lc) * 1.001;
     }
   }
 
@@ -5144,16 +5146,16 @@ void c_set_coefficients_beam_source(disort_state *ds,
 
     q0 = q0a * ZJ(iq);
     q2 = q2a * ZJ(iq);
-     
-    /*     x-sub-zero and x-sub-one in Eqs. KS(48-49)   */   
-       
-    XB1(iq,lc) = (1.0/deltat)*(q2*exp(XBA(lc)*TAUCPR(lc)) - q0*exp(XBA(lc)*TAUCPR(lc-1)));    
+
+    /*     x-sub-zero and x-sub-one in Eqs. KS(48-49)   */
+
+    XB1(iq,lc) = (1.0/deltat)*(q2*exp(XBA(lc)*TAUCPR(lc)) - q0*exp(XBA(lc)*TAUCPR(lc-1)));
     XB0(iq,lc) = q0 * exp(XBA(lc)*TAUCPR(lc-1)) - XB1(iq,lc)*TAUCPR(lc-1);
 
   }
   return;
 }
-/*============================= end c_set_coefficients_beam_source() ====*/
+/*============================= end of c_set_coefficients_beam_source() ====*/
 
 
 /*============================= c_upbeam() ==============================*/
@@ -5275,7 +5277,7 @@ void c_upbeam(disort_state *ds,
        zbeam0,  :  permanent storage for -zbs0,zbs1,zbsa-, but rD-ordered
         zbeam1,
         zbeama
- 
+
    I N T E R N A L    V A R I A B L E S:
 
        array  :  coefficient matrix in left-hand side of Eq. KS(10)
@@ -5291,14 +5293,14 @@ void c_upbeam(disort_state *ds,
 
 void c_upbeam_pseudo_spherical(disort_state *ds,
 			       int           lc,
-			       double       *array, 
+			       double       *array,
 			       double       *cc,
-			       double       *cmu, 
-			       int          *ipvt, 
+			       double       *cmu,
+			       int          *ipvt,
 			       int           nn,
 			       double       *wk,
 			       disort_pair  *xb,
-			       double       *xba, 
+			       double       *xba,
 			       disort_pair  *zbs,
 			       double       *zbsa,
 			       disort_pair  *zbeamsp,
@@ -5333,7 +5335,7 @@ void c_upbeam_pseudo_spherical(disort_state *ds,
     c_errmsg("upbeam_pseudo_spherical--sgeco says matrix near singular",
 	     DS_WARNING);
   }
-     
+
   rmin = 1.0e-4;
   if ( rcond < rmin ) {
     /*     Dither alpha if rcond to small   */
@@ -5344,14 +5346,14 @@ void c_upbeam_pseudo_spherical(disort_state *ds,
     for (iq = 1; iq <= ds->nstr; iq++) {
       for (jq = 1; jq <= ds->nstr; jq++) {
 	ARRAY(iq,jq) = -CC(iq,jq);
-      }	
+      }
       ARRAY(iq,iq) += 1.0+XBA(lc)*CMU(iq);
       *zbsa     = XBA(lc);
       ZBS1(iq) = XB1(iq,lc);
     }
     /*     Solve linear equations KS(10-11) with dithered alpha */
     rcond = 0.;
-    c_sgeco(array,ds->nstr,ds->nstr,ipvt,&rcond,wk);               
+    c_sgeco(array,ds->nstr,ds->nstr,ipvt,&rcond,wk);
     if (1.+rcond == 1.) {
       c_errmsg("upbeam_pseudo_spherical--sgeco says matrix near singular",
 	       DS_WARNING);
@@ -5360,7 +5362,7 @@ void c_upbeam_pseudo_spherical(disort_state *ds,
 
   for (iq = 1; iq <= ds->nstr; iq++)  WK(iq) = ZBS1(iq);
   c_sgesl( array, ds->nstr, ds->nstr, ipvt, wk, 0 );
-          
+
   for (iq = 1; iq <= ds->nstr; iq++) {
     ZBS1(iq) = WK(iq);
     ZBS0(iq) = XB0(iq,lc) + CMU(iq) * ZBS1(iq);
@@ -5383,7 +5385,7 @@ void c_upbeam_pseudo_spherical(disort_state *ds,
  return;
 
 }
-  
+
 
 /*============================= end of c_upbeam_pseudo_spherical() ======*/
 
@@ -5471,7 +5473,7 @@ void c_upbeam_general_source(disort_state *ds,
     ZZG(nn+iq,  lc) = ZJG(iq);
     ZZG(nn-iq+1,lc) = ZJG(iq+nn);
   }
- 
+
   return;
 }
 
@@ -5542,7 +5544,7 @@ void c_upisot(disort_state *ds,
   if (1.+rcond == 1.) {
     c_errmsg("upisot--sgeco says matrix near singular",DS_WARNING);
   }
-  
+
   for (iq = 1; iq <= ds->nstr; iq++) {
     /* Need to use WK() as a buffer, since Z1 is part of a structure */
     WK(iq) = Z1(iq);
@@ -5752,7 +5754,7 @@ void c_user_intensities(disort_state   *ds,
 	  if ( ds->flag.spher == TRUE ) {
 	    denom  =  sgn*1.0/(ZBAU(iu,lc)*UMU(iu)+1.0);
 	    palint += (ZB0U(iu,lc)*denom*(exp(-ZBAU(iu,lc)*TAUCPR(lc-1)) *exp1
-					  -exp(-ZBAU(iu,lc)*TAUCPR(lc)) *exp2 ) 
+					  -exp(-ZBAU(iu,lc)*TAUCPR(lc)) *exp2 )
 		       +ZB1U(iu,lc)*denom*((TAUCPR(lc-1)+sgn*denom*UMU(iu))
 					   *exp(-ZBAU(iu,lc)*TAUCPR(lc-1)) *exp1
 					   -(TAUCPR(lc)+sgn*denom*UMU(iu) )
@@ -5827,10 +5829,10 @@ void c_user_intensities(disort_state   *ds,
         }
         if (ds->bc.fbeam > 0.) {
 	  if ( ds->flag.spher == TRUE ) {
-	    if ( negumu ) {	     
+	    if ( negumu ) {
 	      expn = exp1;
 	      alfa = ZBAU(iu,lyu);
-	      denom = (-1.0/(alfa*UMU(iu)+1.));	        
+	      denom = (-1.0/(alfa*UMU(iu)+1.));
 	      palint += ZB0U(iu,lyu)*denom*(-exp(-alfa*UTAUPR(lu))
 					    + expn*exp(-alfa*TAUCPR(lyu-1)))
 		+ZB1U(iu,lyu)*denom*( -(UTAUPR(lu)-UMU(iu)*denom)*exp(-alfa*UTAUPR(lu))
@@ -5843,7 +5845,7 @@ void c_user_intensities(disort_state   *ds,
 	      palint += ZB0U(iu,lyu)*denom*(exp(-alfa*UTAUPR(lu))
 					    -exp(-alfa*TAUCPR(lyu))*expn)
 		+ZB1U(iu,lyu)*denom*( (UTAUPR(lu) +UMU(iu)*denom)*exp(-alfa*UTAUPR(lu))
-				      -(TAUCPR(lyu)+UMU(iu)*denom)*exp(-alfa*TAUCPR(lyu))*expn );	          
+				      -(TAUCPR(lyu)+UMU(iu)*denom)*exp(-alfa*TAUCPR(lyu))*expn );
 	    }
 	  }
 	  else {
@@ -6095,7 +6097,7 @@ int c_check_inputs(disort_state *ds,
       }
     }
   }
- 
+
   if (ds->flag.ibcnd == GENERAL_BC) {
     if (ds->flag.usrtau) {
       if (ds->ntau < 1) {
@@ -6342,7 +6344,7 @@ double c_dref(double       wvnmlo,
 
        nmu    :  Number of arguments of YLM
        m      :  Order of YLM
-       maxmu  : 
+       maxmu  :
        twonm1 :  Max degree of YLM
        MU(i)  :  Arguments of YLM (i = 1 to nmu)
 
@@ -6442,7 +6444,7 @@ void c_legendre_poly(int     nmu,
 
   ERRORS WHICH ARE NOT TRAPPED:
 
-      * Power or exponential series may underflow, giving no significant digits.  
+      * Power or exponential series may underflow, giving no significant digits.
         This may or may not be of concern, depending on the application.
 
       * Simpson-rule special case is skipped when denominator of integrand will cause overflow.
@@ -6659,7 +6661,7 @@ void c_print_avg_intensities(disort_state *ds,
   for (np = 1; np <= npass; np++) {
     iumin = 1+lenfmt*(np-1);
     iumax = IMIN(lenfmt*np,ds->numu);
-    fprintf(stdout,"\n          "); 
+    fprintf(stdout,"\n          ");
     for (iu = iumin; iu <= iumax; iu++) {
       fprintf(stdout,"%14.5f",UMU(iu));
     }
@@ -6832,7 +6834,7 @@ void c_print_inputs(disort_state *ds,
   }
 
   for (lc = 1; lc <= ds->nlyr; lc++) {
-    
+
     if (ds->flag.planck) {
       fprintf(stdout,"%4d%10.4f%10.4f%10.5f%12.5f%10.4f%10.4f%10.5f%9.4f%14.3f\n",
                      lc,DTAUC(lc),TAUC(lc),SSALB(lc),FLYR(lc),DTAUCPR(lc),TAUCPR(lc),OPRIM(lc),PMOM(1,lc),TEMPER(lc-1));
@@ -6857,7 +6859,7 @@ void c_print_inputs(disort_state *ds,
           fprintf(stdout,"%11.6f",PMOM(k,lc));
           if ((k+1)%10 == 0) {
             fprintf(stdout,"\n      ");
-          } 
+          }
         }
         fprintf(stdout,"\n");
       }
@@ -6869,7 +6871,7 @@ void c_print_inputs(disort_state *ds,
     j = 0;
     for (lc = 1; lc <= ds->nlyr; lc++) {
       fprintf(stdout,"%4d%10.4f",lc,DTAUC(lc));
-      for (iq = 1; iq <= ds->nstr; iq++) {	
+      for (iq = 1; iq <= ds->nstr; iq++) {
 	fprintf(stdout,"%13.6e",GENSRC(j,lc,iq));
       }
       fprintf(stdout,"\n");
@@ -7096,7 +7098,7 @@ void c_gaussian_quadrature(int    m,
 /*
  * Calculate ratio a/b with overflow and underflow protection
  * (thanks to Prof. Jeff Dozier for some suggestions here).
- * 
+ *
  * Modification in this C version: in the case b == 0., returns 1.+a.
  *
  * Called by: c_disort
@@ -7117,7 +7119,7 @@ double c_ratio(double a,
     huge   = DBL_MAX;
     powmax = log10(huge);
     powmin = log10(tiny);
-   
+
     initialized = TRUE;
   }
 
@@ -7162,7 +7164,7 @@ double c_ratio(double a,
 /*============================= c_fcmp() ================================*/
 
 /*
- * Derived from fcmp(), version 1.2.2, 
+ * Derived from fcmp(), version 1.2.2,
  * Copyright (c) 1998-2000 Theodore C. Belding
  * University of Michigan Center for the Study of Complex Systems
  * <mailto:Ted.Belding@umich.edu>
@@ -7186,21 +7188,21 @@ double c_ratio(double a,
  * Returns:
  *   -1 if x1 < x2
  *    0 if x1 == x2
- *    1 if x1 > x2		
+ *    1 if x1 > x2
  */
 
 int c_fcmp(double x1,
            double x2) {
-  int 
+  int
     exponent;
   double
     delta,
     difference;
   const double
     epsilon = DBL_EPSILON;
-  
-  /* 
-   * Get exponent(max(fabs(x1),fabs(x2))) and store it in exponent. 
+
+  /*
+   * Get exponent(max(fabs(x1),fabs(x2))) and store it in exponent.
    *
    * If neither x1 nor x2 is 0,
    * this is equivalent to max(exponent(x1),exponent(x2)).
@@ -7210,12 +7212,12 @@ int c_fcmp(double x1,
    * magnitude. But the exponent of 0 should be less than any number
    * whose magnitude is greater than 0.
    *
-   * So we only want to set exponent to 0 if both x1 and x2 are 0. 
-   * Hence, the following works for all x1 and x2. 
+   * So we only want to set exponent to 0 if both x1 and x2 are 0.
+   * Hence, the following works for all x1 and x2.
    */
   frexp(fabs(x1) > fabs(x2) ? x1 : x2,&exponent);
 
-  /* 
+  /*
    * Do the comparison.
    *
    * delta = epsilon*pow(2,exponent)
@@ -7225,7 +7227,7 @@ int c_fcmp(double x1,
    * Otherwise x1 > x2 or x1 < x2, depending on which side of
    * the neighborhood x1 is on.
    */
-  delta      = ldexp(epsilon,exponent); 
+  delta      = ldexp(epsilon,exponent);
   difference = x1-x2;
 
   if (difference > delta) {
@@ -7271,7 +7273,7 @@ void c_self_test(int            compare,
   const double
     acc = 1.e-4;
   int
-    i,ok;    
+    i,ok;
   double
     error;
 
@@ -7401,7 +7403,7 @@ void c_self_test(int            compare,
    particular solutions do not need to be computed).  See Ref. S2 and references therein for details.
    The basic idea is as follows.  The reciprocity principle leads to the following relationships for a plane-parallel,
    vertically inhomogeneous medium lacking thermal (or other internal) sources:
-  
+
       albedo(theta) = u_0(theta) for unit-intensity isotropic
                        illumination at *top* boundary
        trans(theta) =  u_0(theta) for unit-intensity isotropic
@@ -7414,10 +7416,10 @@ void c_self_test(int            compare,
                        at angle theta
 
    O U T P U T    V A R I A B L E S:
-  
+
        ALBMED(iu)   Albedo of the medium as a function of incident
                     beam angle cosine UMU(IU)
-  
+
        TRNMED(iu)   Transmissivity of the medium as a function of
                     incident beam angle cosine UMU(IU)
 
@@ -7433,7 +7435,7 @@ void c_self_test(int            compare,
                    in banded form required by LINPACK solution routines
        ncol        number of columns in CBAND matrix
        ipvt        INTEGER vector of pivot indices (most others documented in DISORT)
-  
+
    Called by- c_disort
    Calls- c_legendre_poly, c_sgbco, c_solve_eigen, c_interp_eigenvec, c_set_matrix, c_solve1,
           c_albtrans_intensity, c_albtrans_spherical, c_print_albtrans
@@ -7595,7 +7597,7 @@ void c_albtrans(disort_state  *ds,
      * like that of adding-doubling eqs.)
      */
     for (iu = 1; iu <= ds->numu; iu++) {
-      
+
       ALBMED(iu) += ds->bc.albedo/(1.-ds->bc.albedo*sphalb)*sphtrn*TRNMED(iu);
       TRNMED(iu) += ds->bc.albedo/(1.-ds->bc.albedo*sphalb)*sphalb*TRNMED(iu);
     }
@@ -7610,13 +7612,13 @@ void c_albtrans(disort_state  *ds,
   if (ds->flag.prnt[3]) {
     c_print_albtrans(ds,out);
   }
-  
+
   /* CE: I want to output the the spherical albedo and transmittance, and use the */
   /* variables ALBMED and TRNMED for this. They are not used so far otherwise in uvspec */
   /* If somebody needs these variables I will include new variables for sphtrn and sphalb*/
   ALBMED(1)=sphalb;
   TRNMED(1)=sphtrn;
-  
+
   return;
 }
 
@@ -8036,7 +8038,7 @@ int c_write_too_small_dim(int   quiet,
   return TRUE;
 }
 
-/*============================= end of c_write_too_small_dim =============*/
+/*============================= end of c_write_too_small_dim() ===========*/
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  Call tree:
@@ -8609,7 +8611,7 @@ void c_sgbsl(double *abd,
                 In particular, rcond is zero if exact singularity
                 is detected or the estimate underflows.
         z       double(n), a work vector whose contents are usually
-                unimportant. If A is close to a singular matrix, then z 
+                unimportant. If A is close to a singular matrix, then z
                 is an approximate null vector in the sense that
                 norm(A*Z) = rcond*norm(A)*norm(Z) .
  ------------------------------------------------------------------*/
@@ -8873,7 +8875,7 @@ void c_sgefa(double *a,
         n       int, the order of the matrix  A
         ipvt    int(n), the pivot vector from sgeco or sgefa.
         b       double(n), the right hand side vector.
-        job     int, 
+        job     int,
                 = 0         to solve  A*X = B ,
                 = nonzero   to solve  transpose(A)*X = B
 
@@ -9059,7 +9061,7 @@ void c_saxpy(int     n,
   return;
 }
 
-/*============================= c_saxpy() ================================*/
+/*============================= end of c_saxpy() =========================*/
 
 /*============================= c_sdot() =================================*/
 
@@ -9201,7 +9203,7 @@ int c_isamax(int     n,
         ans  = i;
       }
     }
-  } 
+  }
 
   return ans;
 }
@@ -9248,7 +9250,7 @@ int c_isamax(int     n,
       Space Sci. 39, 671-683.
 
      KS: Kylling, A., and K. Stamnes 1992: Efficient yet accurate
-      solution of the linear transport  equation in the 
+      solution of the linear transport  equation in the
       presence of internal sources: the exponential-linear
       approximation, J. Comp. Phys. 102, 265-276.
 
@@ -9279,10 +9281,10 @@ int c_isamax(int     n,
     medium in the two-stream approximation. For a discussion of the
     theory behind the present implementation see (KST).
 
-    twostr() is based on the general n-stream algorithm DISORT 
-    described in Stamnes et al. (1988, STWJ), and incorporates 
+    twostr() is based on the general n-stream algorithm DISORT
+    described in Stamnes et al. (1988, STWJ), and incorporates
     all the advanced features of that algorithm. Furthermore it
-    has been extended to include spherical geometry using the 
+    has been extended to include spherical geometry using the
     perturbation approach of Dahlback and Stamnes (1991). Relative
     to DISORT, it is both simplified and extended as follows:
 
@@ -9311,7 +9313,7 @@ int c_isamax(int     n,
     dusty layer would suggest three computational layers.
 
     However the radiant quantities can be returned to the user at ANY
-    level.  For example, the user may have picked 3 computational 
+    level.  For example, the user may have picked 3 computational
     layers, but he can then request intensities from e.g. only the
     middle of the 2nd layer.
 
@@ -9356,16 +9358,16 @@ int c_isamax(int     n,
                 rather than for layers.)  Don't forget to put top
                 temperature in 'TEMPER(0)', not 'TEMPER(1)'.  Top and
                 bottom values do not need to agree with top and
-                bottom boundary temperatures ds.bc.ttemp and ds.bc.btemp 
+                bottom boundary temperatures ds.bc.ttemp and ds.bc.btemp
                 (i.e. slips are allowed).
                 Needed only if ds.flag.planck is TRUE.
 
     ZD(lev)     lev = 0 to ds.nlyr, altitude of level above
-                the ground, i.e. ZD(nlyr) = 0., the surface of 
+                the ground, i.e. ZD(nlyr) = 0., the surface of
                 the planet. Typically in units of (km)
-                Must have same units as -radius-. 
+                Must have same units as -radius-.
                 Used to calculate the Chapman function when
-                spherical geometry is needed. 
+                spherical geometry is needed.
                 Needed only if flag.spher is TRUE.
 
     ds.wvnmlo,  Wavenumbers (inv cm) of spectral interval
@@ -9418,8 +9420,8 @@ int c_isamax(int     n,
     ds.bc.temis : Emissivity of top boundary
                   Needed only if -planck- is true.
 
-    radius      : Distance from center of planet to the planets 
-                  surface (km) 
+    radius      : Distance from center of planet to the planets
+                  surface (km)
 
     **********  Control flags  **************
 
@@ -9428,7 +9430,7 @@ int c_isamax(int     n,
                      ( If ds.flag.planck = FALSE, it is not necessary to set any of
                       the variables having to do with thermal emission )
 
-    ds.flag.prnt[0] = TRUE, print input variables 
+    ds.flag.prnt[0] = TRUE, print input variables
     ds.flag.prnt[1] = TRUE, print fluxes, mean intensities and flux divergence.
 
     deltam  = TRUE,  use delta-m method ( see Wiscombe, 1977 )
@@ -9451,7 +9453,7 @@ int c_isamax(int     n,
 +---------------------------------------------------------------------+
 
     == Note on units == If thermal sources are specified, fluxes come
-                        out in [w/sq m] and intensities in [w/sq m/steradian].  
+                        out in [w/sq m] and intensities in [w/sq m/steradian].
                         Otherwise, the flux and intensity units are determined
                         by the units of -fbeam- and -fisot-.
 
@@ -9485,12 +9487,12 @@ int c_isamax(int     n,
 
                       i =  3 : dtauc   <  0.
                       i =  4 : ssalb   <  0. || ssalb > 1.
-                      i =  5 : temper  <  0. 
+                      i =  5 : temper  <  0.
                       i =  6 : gg      < -1. || gg > 1.
                       i =  7 : ZD(lc)  >  ZD(lc-1)
                       i =  8 : ds.ntau <  1
 
-                      i = 10 : UTAU(lu) < 0. || UTAU(lu) > TAUC(nlyr) 
+                      i = 10 : UTAU(lu) < 0. || UTAU(lu) > TAUC(nlyr)
 
                       i = 12 : fbeam    < 0.
                       i = 13 : if flag.spher = FALSE
@@ -9524,7 +9526,7 @@ int c_isamax(int     n,
      lu     :  For user levels
      lc     :  For computational layers (each having a different single-scatter albedo and/or phase function)
      lev    :  For computational levels
-     ls     :  Runs from 0 to 2*ds->nlyr+1, ls = 1,2,3 refers to top, center and bottom of layer 1, 
+     ls     :  Runs from 0 to 2*ds->nlyr+1, ls = 1,2,3 refers to top, center and bottom of layer 1,
                ls = 3,4,5 refers to top, center and bottom of layer 2, etc.
 
 +---------------------------------------------------------------------+
@@ -9708,7 +9710,7 @@ void c_twostr(disort_state  *ds,
   free(b),     free(cband), free(ch),  free(chtau),free(dtaucpr),free(expbea),free(flyr),free(fl);
   free(ggprim),free(kk),    free(ll),  free(oprim),free(pkag),   free(pkagc), free(rr),  free(tauc),free(taucpr);
   free(u0c),   free(utaupr),free(diag),free(ts);
-  
+
   return;
 }
 
@@ -9747,9 +9749,9 @@ void c_twostr(disort_state  *ds,
       rjp1      : r-sub-j+1 in eq. B1 (DS)
       xpsinz    : The length of the line OG in Fig. 1, (DS)
 
- 
+
  NOTE: Assumes a spherical planet. One might consider generalizing following
-       Velinow YPI, Kostov VI, 2001, Generalization on Chapman Function for the Atmosphere of an Oblate Rotating Planet, 
+       Velinow YPI, Kostov VI, 2001, Generalization on Chapman Function for the Atmosphere of an Oblate Rotating Planet,
          Comptes Rendus de l'Academie Bulgare des Sciences 54, 29-34.
 */
 
@@ -9830,6 +9832,8 @@ double c_chapman(int     lc,
 }
 
 /*============================= end of c_chapman() =======================*/
+
+/*============================= c_chapman_simpler() ======================*/
 
 double c_chapman_simpler(int     lc,
                  double  taup,
@@ -10432,7 +10436,7 @@ void c_twostr_solns(disort_state *ds,
         /* Be careful with log of numbers close to one */
         if (fabs(fact3) <= 0.005) {
           /* numbers close to one */
-          q1    = 0.99*q1; 
+          q1    = 0.99*q1;
           fact3 = log(q1/q2+sgn*sqrt(arg));
         }
 
@@ -10709,7 +10713,7 @@ void c_twostr_set(disort_state *ds,
     CHTAU(0) = 0.;
     EXPBEA(0) = 1.;
     zenang    = acos(ds->bc.umu0)/DEG;
-    
+
     if(ds->flag.spher == TRUE && ds->bc.umu0 < 0.) {
       EXPBEA(0) = exp(-c_chapman(1,0.,tauc,ds->nlyr,ds->zd,ds->dtauc,zenang,radius));
     }
@@ -10902,7 +10906,7 @@ void c_twostr_solve_bc(disort_state *ds,
 
   /*
    * Construct -b-, for parallel beam + bottom reflection + thermal emission at top and/or bottom
-   * 
+   *
    * Top boundary, right-hand-side of eq. KST(28)
    */
   lc   = 1;
@@ -11000,7 +11004,7 @@ void c_twostr_solve_bc(disort_state *ds,
                t      : Temperature [K]
 
   O U T P U T :  ans  : Integrated Planck function [Watts/sq m]
-                         = integral (wnumlo to wnumhi) of 2h c*c nu*nu*nu/(exp(hc nu/(kT))-1), 
+                         = integral (wnumlo to wnumhi) of 2h c*c nu*nu*nu/(exp(hc nu/(kT))-1),
                          where h = Plancks constant, c = speed of light, nu = wavenumber,
                          T=temperature,and k = Boltzmann constant
 
@@ -11023,7 +11027,7 @@ void c_twostr_solve_bc(disort_state *ds,
       * Power or exponential series may underflow, giving no significant digits.
         This may or may not be of concern, depending on the application.
 
-      * Simpson-rule special case is skipped when denominator of integrand will cause overflow.  
+      * Simpson-rule special case is skipped when denominator of integrand will cause overflow.
         In that case the normal procedure is used, which may be inaccurate if the wavenumber limits
         (wnumlo, wnumhi) are close together.
  ----------------------------------------------------------------------
@@ -11032,7 +11036,7 @@ void c_twostr_solve_bc(disort_state *ds,
 
         a1,2,... :  Power series coefficients
         c2       :  h*c/k, in units cm*k (h = Planck's constant, c = speed of light, k = Boltzmann constant)
-        D(I)     :  Exponential series expansion of integral of Planck function from wnumlo (i=1) 
+        D(I)     :  Exponential series expansion of integral of Planck function from wnumlo (i=1)
                     or wnumhi (i=2) to infinity
         ex       :  exp(-V(I))
         exm      :  pow(ex,m)
@@ -11080,7 +11084,7 @@ double __attribute__((weak)) c_planck_func2(double wnumlo,
     sigdpi = SIGMA/M_PI;
     vmax   = log(DBL_MAX);
     conc   = 15./pow(M_PI,4.);
-    c1     = 1.1911e-8;  
+    c1     = 1.1911e-8;
 
     initialized = TRUE;
   }
@@ -11137,12 +11141,12 @@ double __attribute__((weak)) c_planck_func2(double wnumlo,
        * Use exponential series
        *
        * Find upper limit of series
-       */ 
+       */
       mmax = 1;
       while (v[i] < vcp[mmax-1]) {
         mmax++;
       }
-      
+
       ex   = exp(-v[i]);
       exm  = 1.;
       d[i] = 0.;
@@ -11206,7 +11210,7 @@ void c_disort_state_alloc(disort_state *ds)
   int
     nu=0;
 
-  ds->dtauc = c_dbl_vector(0,ds->nlyr,"ds->dtauc");  
+  ds->dtauc = c_dbl_vector(0,ds->nlyr,"ds->dtauc");
   ds->ssalb = c_dbl_vector(0,ds->nlyr,"ds->ssalb");
   /*
    * NOTE: PMOM is used in the code even when ds->nmom is not set by the user
@@ -11252,7 +11256,7 @@ void c_disort_state_alloc(disort_state *ds)
   nu = ds->numu;
   if ( (!ds->flag.usrang || ds->flag.onlyfl)) nu = ds->nstr;
 
-  if (ds->flag.ibcnd == SPECIAL_BC) 
+  if (ds->flag.ibcnd == SPECIAL_BC)
     ds->umu = c_dbl_vector(0,2*nu,"ds->umu");
   else
     ds->umu = c_dbl_vector(0,nu,"ds->umu");
@@ -11410,7 +11414,7 @@ void c_disort_out_free(disort_state  *ds,
   if (out->u0u)    free(out->u0u);
   if (out->uu)     free(out->uu);
   if (out->rad)    free(out->rad);
-  if ( ds->flag.output_uum ) 
+  if ( ds->flag.output_uum )
     if (out->uum) free (out->uum);
 
   return;
@@ -11456,13 +11460,13 @@ void c_twostr_state_alloc(disort_state *ds)
   //20120820ak better to just allocate this little guy regardless of the status of spher.
   //20120820ak So I commented the following.
   //20120820ak  if (ds->flag.spher == TRUE) {
-  ds->zd        = c_dbl_vector(0,ds->nlyr+1,"ds->zd");	
+  ds->zd        = c_dbl_vector(0,ds->nlyr+1,"ds->zd");
   //20120820ak  }
 
   return;
 }
 
-/*============================= endof c_twostr_state_alloc() ============*/
+/*============================= end of c_twostr_state_alloc() ============*/
 
 /*============================= c_twostr_state_free() ===================*/
 
@@ -11520,17 +11524,17 @@ void c_twostr_out_free(disort_state  *ds,
  * Allocates memory for a 1D double-precision array with range [nl..nh].
  *
  * NOTE: calloc() zeros the memory it allocates.
- */ 
+ */
 
-double *c_dbl_vector(int  nl, 
+double *c_dbl_vector(int  nl,
 		     int  nh,
 		     char const *name)
 {
-  unsigned int  
+  unsigned int
     len_safe;
-  int           
+  int
     nl_safe, nh_safe;
-  double         
+  double
     *m;
 
   if (nh < nl) {
@@ -11560,17 +11564,17 @@ double *c_dbl_vector(int  nl,
  * Allocates memory for a 1D integer array with range [nl..nh].
  *
  * NOTE: calloc() zeros the memory it allocates.
- */ 
+ */
 
-int *c_int_vector(int  nl, 
+int *c_int_vector(int  nl,
 		  int  nh,
 		  char const *name)
 {
-  unsigned int  
+  unsigned int
     len_safe;
-  int           
+  int
     nl_safe, nh_safe;
-  int         
+  int
     *m;
 
   if (nh < nl) {
@@ -11603,11 +11607,11 @@ int *c_int_vector(int  nl,
  * NOTE: Argument nh is not used, but kept to match dbl_vector().
  */
 
-void c_free_dbl_vector(double *m, 
-                       int     nl, 
+void c_free_dbl_vector(double *m,
+                       int     nl,
                        int     nh)
 {
-  int  
+  int
     nl_safe;
 
   nl_safe = (nl < 0) ? nl : 0;
@@ -11638,7 +11642,7 @@ void c_free_dbl_vector(double *m,
  * Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,
  * USA.
  *-------------------------------------------------------------------
- * Linearly interpolate to get approximate tau corresponding to 
+ * Linearly interpolate to get approximate tau corresponding to
  * altitude zout
  *
  * Input/output variables described in phodis.f
@@ -11666,7 +11670,7 @@ int c_setout( float *sdtauc,
     return -1;
   }
 
-  /* */     
+  /* */
 
   TAUINT (1) = 0.0;
   for (lc=1; lc<=nlyr; lc++)
@@ -11674,7 +11678,7 @@ int c_setout( float *sdtauc,
 
   itype = 2;
 
-  for (itau=1; itau<=ntau; itau++) 
+  for (itau=1; itau<=ntau; itau++)
     SUTAU (itau) = c_inter( nlyr+1, itype, ZOUT (itau),
 			    z, tauint, &hh );
 
@@ -11721,7 +11725,7 @@ int c_setout( float *sdtauc,
  *
  *     Output variables:
  *     ynew      Interpolated function value at arg
- *     hh        gradient or scale height value  
+ *     hh        gradient or scale height value
  *
  * This code was translated to c from fortran by Robert Buras
  *
@@ -11763,7 +11767,7 @@ double c_inter( int     npoints,
       ynew = YARR (ip);
     }
     else {
-      *hh = -( XARR (ip+1) - XARR (ip) ) / 
+      *hh = -( XARR (ip+1) - XARR (ip) ) /
 	log( YARR (ip+1) / YARR (ip));
       ynew = YARR (ip) * exp(- ( arg - XARR (ip) ) / *hh );
     }
@@ -11806,7 +11810,7 @@ int c_gaussian_quadrature_test(int nstr, float *sza, double umu0)
     fprintf(stderr,"Error allocating cwt!\n");
     return -1;
   }
-    
+
   nn = nstr / 2.0;
 
   c_gaussian_quadrature ( nn, cmu, cwt );
@@ -11830,7 +11834,7 @@ int c_gaussian_quadrature_test(int nstr, float *sza, double umu0)
   }
 
   free(cwt);
-  free(cmu);      
+  free(cmu);
   return result;
 }
 
