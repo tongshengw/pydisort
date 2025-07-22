@@ -3,7 +3,7 @@ set(FETCHCONTENT_QUIET TRUE)
 
 set(PACKAGE_NAME memorypool)
 set(REPO_URL "https://github.com/tongshengw/memorypool")
-set(REPO_TAG "v0.1.12")
+set(REPO_TAG "v0.1.17")
 
 add_package(${PACKAGE_NAME} ${REPO_URL} ${REPO_TAG} "" ON)
 set(MEMORYPOOL_INCLUDE_DIR

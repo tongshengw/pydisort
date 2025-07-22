@@ -26,11 +26,20 @@
 #ifndef __locate_disort_h
 #define __locate_disort_h
 
+#ifdef __CUDACC__
+#define DISPATCH_MACRO __device__
+#else
+#define DISPATCH_MACRO
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+DISPATCH_MACRO
 int locate_disort (double *xx, int n, double x);
+
+DISPATCH_MACRO
 int flocate_disort (float *xx, int n, float x);
 
 #ifdef __cplusplus

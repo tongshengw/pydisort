@@ -10,7 +10,7 @@ def process_file(input_file_path):
 
     start_pattern = r"/(?!.*end of).*\(\).*"
     end_pattern = r"/.*end of.*\(\).*"
-    preprocessor_pattern = r"#.*"
+    preprocessor_pattern = r"#.*def.*"
     fprintf_pattern = r".*fprintf.*\(.*\).*"
     fprintf_multiline_pattern = r".*fprintf.*\(.*"
     malloc_pattern = r".*malloc.*"
@@ -22,11 +22,13 @@ def process_file(input_file_path):
             lines = file.readlines()
 
         i = 0
+        preprocessor_strings = []
         while i < len(lines):
             line = lines[i].strip()
 
             if re.match(preprocessor_pattern, line):
                 print(line)
+                preprocessor_strings.append(line + "\n")
                 i += 1
                 continue
 
@@ -59,7 +61,7 @@ def process_file(input_file_path):
                             )
                             content.append(processed_line)
                         elif re.match(calloc_pattern, current_line):
-                            processed_line = convert_calloc_to_swappablemalloc(
+                            processed_line = convert_calloc_to_swappablecalloc(
                                 current_line
                             )
                             content.append(processed_line)
@@ -93,13 +95,16 @@ def process_file(input_file_path):
                             output_file_path, "w", encoding="utf-8"
                         ) as output_file:
                             output_file.writelines(
-                                """#include<configure.h>
-
-#include<poolalloc.cuh>
+                                [
+                                    """// includes
+#include<alloc.h>
 #include<cdisort.h>
+#include<locate.h>
 
 DISPATCH_MACRO
 """
+                                ]
+                                + preprocessor_strings
                             )
                             output_file.writelines(content)
                         print(f"{output_file_path}")
@@ -148,12 +153,12 @@ def convert_malloc_to_swappablemalloc(code):
     return code.replace("malloc", "swappablemalloc")
 
 
-def convert_calloc_to_swappablemalloc(code):
-    return code.replace("calloc", "swappablemalloc")
+def convert_calloc_to_swappablecalloc(code):
+    return code.replace("calloc", "swappablecalloc")
 
 
 def convert_exit_to_trap(code):
-    return code.replace("exit", "__trap")
+    return code.replace("exit(1)", "__trap()")
 
 
 def process_line_for_filename(line):
