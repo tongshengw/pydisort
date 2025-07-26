@@ -12,15 +12,15 @@
 
 namespace disort {
 
-void call_disort_cuda(at::TensorIterator& iter, int rank_in_column,
+void call_disort_cuda(at::TensorIterator& iter, int upward,
                       disort_state *ds, disort_output *ds_out) {
   at::cuda::CUDAGuard device_guard(iter.device());
 
   AT_DISPATCH_FLOATING_TYPES(iter.dtype(), "call_disort_cuda", [&] {
     auto nprop = at::native::ensure_nonempty_size(iter.output(), -1);
 
-    native::gpu_kernel<12>(
-        iter, [=] GPU_LAMBDA(char* const data[12], unsigned int strides[12]) {
+    native::gpu_kernel<13>(
+        iter, [=] __device__ (char* const data[13], unsigned int strides[13]) {
           auto out = reinterpret_cast<scalar_t*>(data[0] + strides[0]);
           auto prop = reinterpret_cast<scalar_t*>(data[1] + strides[1]);
           auto umu0 = reinterpret_cast<scalar_t*>(data[2] + strides[2]);
@@ -35,8 +35,9 @@ void call_disort_cuda(at::TensorIterator& iter, int rank_in_column,
           auto temf = reinterpret_cast<scalar_t*>(data[11] + strides[11]);
           auto idxf = reinterpret_cast<scalar_t*>(data[12] + strides[12]);
           int idx = static_cast<int>(*idxf);
-          //  disort_impl(out, prop, ftoa, temf, rank_in_column, ds[*idx],
-          //            ds_out[*idx], nprop);
+          disort_impl(out, prop, umu0, phi0, fbeam, albedo, fluor, fisot,
+                      temis, btemp, ttemp, temf, upward, ds[idx], ds_out[idx],
+                      nprop);
         });
   });
 }

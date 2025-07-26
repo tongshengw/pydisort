@@ -20,7 +20,7 @@ void gpu_kernel(at::TensorIterator& iter, const func_t& f) {
   auto offset_calc = ::make_offset_calculator<Arity>(iter);
   int64_t numel = iter.numel();
 
-  at::native::launch_legacy_kernel<128, 1>(numel,
+  at::native::launch_legacy_kernel<64, 1>(numel,
       [=] __device__(int idx) {
       auto offsets = offset_calc.get(idx);
       f(data.data(), offsets.data());

@@ -41,6 +41,7 @@ if (CUDAToolkit_FOUND)
   add_library(${namel}_cuda_${buildl}
       OBJECT
       ${cu_src_files}
+      locate.cu
       )
 
   set_target_properties(${namel}_cuda_${buildl}
@@ -48,12 +49,17 @@ if (CUDAToolkit_FOUND)
       CUDA_SEPARABLE_COMPILATION ON
       )
 
+  target_compile_options(${namel}_cuda_${buildl}
+      PRIVATE
+      $<$<COMPILE_LANGUAGE:CUDA>:--maxrregcount=255>
+      )
+
   target_link_libraries(${namel}_cuda_${buildl}
       PUBLIC
-    #   $<IF:$<BOOL:${CUDAToolkit_FOUND}>,CUDA::cudart,>
-    #   $<IF:$<BOOL:${CUDAToolkit_FOUND}>,CUDA::cudart_static,>
-    #   $<IF:$<BOOL:${CUDAToolkit_FOUND}>,${TORCH_CUDA_LIBRARY},>
-    #   $<IF:$<BOOL:${CUDAToolkit_FOUND}>,${C10_CUDA_LIBRARY},>
+      $<IF:$<BOOL:${CUDAToolkit_FOUND}>,CUDA::cudart,>
+      $<IF:$<BOOL:${CUDAToolkit_FOUND}>,CUDA::cudart_static,>
+      $<IF:$<BOOL:${CUDAToolkit_FOUND}>,${TORCH_CUDA_LIBRARY},>
+      $<IF:$<BOOL:${CUDAToolkit_FOUND}>,${C10_CUDA_LIBRARY},>
     m memorypool::memorypool_cu
   )
 

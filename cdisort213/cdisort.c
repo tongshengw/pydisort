@@ -4967,7 +4967,7 @@ void c_interp_source(disort_state   *ds,
 /*============================= end of c_interp_source() ================*/
 
 
-/*============================= c_interp_coefficients_beam_source =======*/
+/*============================= c_interp_coefficients_beam_source() =======*/
 
 /*
      Find coefficients at user angle, necessary for later use in

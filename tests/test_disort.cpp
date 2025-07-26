@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
   op.user_tau({0, 0.03125});
 
   disort::Disort disort(op);
+  disort->to(torch::kCUDA);
 
   auto prop = torch::zeros({disort->options.nwave(), disort->options.ncol(),
                             disort->ds().nlyr, 2 + disort->ds().nstr},

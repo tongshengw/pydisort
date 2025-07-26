@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <locate.h>
 
 DISPATCH_MACRO
 int locate_disort (double *xx, int n, double x)
