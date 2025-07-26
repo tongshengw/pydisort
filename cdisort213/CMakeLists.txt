@@ -49,11 +49,6 @@ if (CUDAToolkit_FOUND)
       CUDA_SEPARABLE_COMPILATION ON
       )
 
-  target_compile_options(${namel}_cuda_${buildl}
-      PRIVATE
-      $<$<COMPILE_LANGUAGE:CUDA>:--maxrregcount=255>
-      )
-
   target_link_libraries(${namel}_cuda_${buildl}
       PUBLIC
       $<IF:$<BOOL:${CUDAToolkit_FOUND}>,CUDA::cudart,>
